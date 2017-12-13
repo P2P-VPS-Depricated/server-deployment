@@ -10,4 +10,4 @@ mkdir theme
 mkdir theme/site-template-connextcms
 mv merge-site-plugin-files public/
 
-mkdir openBazaar/data
+mkdir open-bazaar/data
