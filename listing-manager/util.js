@@ -32,11 +32,11 @@ function updateExpiration(deviceId, timeSelector) {
 
     let targetTime = 0;
     switch (timeSelector) {
-      case 0: // Now
+      case 0: // Now - force device reset.
         targetTime = 0;
         break;
-      case 10: // 2 minutes
-        targetTime = 60000 * 2;
+      case 10: // Testing
+        targetTime = 60000 * 8;
         break;
       case 20: // 1 hr
         targetTime = 60000 * 60;

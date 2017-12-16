@@ -54,6 +54,11 @@ console.log(`Listing Manager started on port ${port}`);
 
 const apiCredentials = util.getOBAuth();
 
+/*
+  This function checks for order notications from the OpenBazaar (OB) store.
+  When a new order comes it, it marks the order 'Fulfilled' and sends the login
+  information to the Renter.
+*/
 function checkNotifications() {
   //debugger;
 
@@ -250,9 +255,7 @@ function checkRentedDevices() {
 
               .then(() => {
                 console.log(
-                  `Device ${
-                    thisDeviceId
-                  } has been removed from the rented devices list due to inactivity.`
+                  `Device ${thisDeviceId} has been removed from the rented devices list due to inactivity.`
                 );
               })
           );
