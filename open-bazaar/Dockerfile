@@ -32,4 +32,4 @@ EXPOSE 4001 4002 9005
 #ENTRYPOINT ["/opt/openbazaard"]
 
 
-CMD ["go", "run", "openbazaard.go", "start", "-d", "/var/lib/openbazaar/"]
+CMD ["go", "run", "openbazaard.go", "start", "-t", "-d", "/var/lib/openbazaar/"]
