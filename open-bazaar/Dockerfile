@@ -12,7 +12,7 @@ RUN go get github.com/OpenBazaar/openbazaar-go
 # Initialize openbazaar go
 WORKDIR /go/src/github.com/OpenBazaar/openbazaar-go
 RUN git pull
-RUN git checkout altcoins
+RUN git checkout altcoins-rc1
 RUN git pull
 VOLUME /var/lib/openbazaar
 RUN go run openbazaard.go init -d /var/lib/openbazaar
