@@ -13,9 +13,9 @@ RUN go get github.com/OpenBazaar/openbazaar-go
 WORKDIR /go/src/github.com/OpenBazaar/openbazaar-go
 RUN git pull
 RUN git checkout altcoins-rc1
-RUN git pull
+#RUN git pull
 VOLUME /var/lib/openbazaar
-RUN go run openbazaard.go init -d /var/lib/openbazaar
+RUN go run openbazaard.go init -t -d /var/lib/openbazaar
 COPY config /var/lib/openbazaar/config
 
 #WORKDIR /go/src/github.com/OpenBazaar/openbazaar-go
