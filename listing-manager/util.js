@@ -67,7 +67,8 @@ function updateExpiration(deviceId, timeSelector) {
 
           const now = new Date();
           const expirationDate = new Date(now.getTime() + targetTime);
-          data.collection.expiration = expirationDate.toISOString();
+          //data.collection.expiration = expirationDate.toISOString();
+          data.collection.expiration = expirationDate;
 
           // Update the model.
           const options = {
