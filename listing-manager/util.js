@@ -64,11 +64,19 @@ function updateExpiration(deviceId, timeSelector) {
         // Update the model with a new expiration date.
         .then(function(data) {
           //debugger;
-
+          console.log(
+            `Expiration before: ${data.collection.expiration}, type: ${typeof data.collection
+              .expiration}`
+          );
           const now = new Date();
           const expirationDate = new Date(now.getTime() + targetTime);
           //data.collection.expiration = expirationDate.toISOString();
           data.collection.expiration = expirationDate;
+
+          console.log(
+            `Expiration after: ${data.collection.expiration}, type: ${typeof data.collection
+              .expiration}`
+          );
 
           // Update the model.
           const options = {
