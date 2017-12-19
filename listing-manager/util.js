@@ -70,8 +70,8 @@ function updateExpiration(deviceId, timeSelector) {
           );
           const now = new Date();
           const expirationDate = new Date(now.getTime() + targetTime);
-          //data.collection.expiration = expirationDate.toISOString();
-          data.collection.expiration = expirationDate;
+          data.collection.expiration = expirationDate.toISOString();
+          //data.collection.expiration = expirationDate;
 
           console.log(
             `Expiration after: ${data.collection.expiration}, type: ${typeof data.collection
