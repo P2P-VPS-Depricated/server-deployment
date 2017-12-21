@@ -1,62 +1,36 @@
+/*
+  The Listing Manager has the following responsibilities:
+
+  * Poll the OpenBazaar (OB) store for new orders and fulfill those orders when they
+  are detected.
+
+  * Monitor Clients with listings in the OB store. Reboot them if they lose connection
+  with the server, by manipulating the expiration date.
+
+  * Monitor Clients that are actively being rented. Reboot them and generate a pro-rated
+  refund if the device loses connection with the server.
+*/
+
 "use strict";
 
+// Dependencies.
 const express = require("express");
-const fs = require("fs");
-const rp = require("request-promise");
-const util = require("./util.js");
+const util = require("./lib/util.js");
 
+// Global Variables
 const app = express();
 const port = 3434;
 
-// Use Handlebars for templating
-const exphbs = require("express3-handlebars");
-let hbs;
-
-// Config for Production and Development
-//app.engine('handlebars', exphbs({
-// Default Layout and locate layouts and partials
-//   defaultLayout: 'main',
-//   layoutsDir: 'views/layouts/',
-//   partialsDir: 'views/partials/'
-//}));
-
-// Locate the views
-//app.set('views', __dirname + '/views');
-
-// Locate the assets
-//app.use(express.static(__dirname + '/assets'));
-
-// Set Handlebars
-//app.set('view engine', 'handlebars');
-
-/*
- * Routes
-//Allow CORS
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
-// Index Page
-app.get('/', function(request, response, next) {
-    response.render('index');
-});
-
-//Request Handler/Webserver functions
-app.use('/listLogFiles', requestHandlers.listLogFiles);
-app.use('/queryTracking', requestHandlers.queryTracking);
-*/
-
-/* Start up the Express web server */
-app.listen(process.env.PORT || port);
-console.log(`Listing Manager started on port ${port}`);
+// Create an Express server. Future development will allow serving of webpages and creation of Client API.
+const ExpressServer = require("../../lib/express-server.js");
+const expressServer = new ExpressServer(app, port);
+expressServer.start();
 
 const apiCredentials = util.getOBAuth();
 
 /*
   This function checks for order notications from the OpenBazaar (OB) store.
-  When a new order comes it, it marks the order 'Fulfilled' and sends the login
+  When a new order comes in, it marks the order 'Fulfilled' and sends the login
   information to the Renter.
 */
 function checkNotifications() {
@@ -88,9 +62,7 @@ function checkNotifications() {
       // Exit if the notice is not for an order.
       if (thisNotice.notification.type !== "order") return null;
 
-      //debugger;
-
-      // Get device ID from listing
+      // Get device ID from the listing
       const tmp = thisNotice.notification.slug.split("-");
       const deviceId = tmp[tmp.length - 1];
 
@@ -131,8 +103,6 @@ function checkNotifications() {
     // Fulfill order with login information.
     .then(privateData => {
       if (privateData == null) return null;
-
-      //debugger;
 
       const config = {
         devicePrivateData: privateData,
@@ -212,7 +182,7 @@ function checkNotifications() {
 const notificationTimer = setInterval(function() {
   checkNotifications();
 }, 120000);
-checkNotifications();
+checkNotifications(); // Call right away at startup.
 
 // Amount of time (mS) a device can go without checking in.
 const MAX_DELAY = 60000 * 6; // 10 minutes.
@@ -275,6 +245,7 @@ function checkRentedDevices() {
     });
 }
 checkRentedDevices(); // Call the function immediately.
+
 // Call checkRentedDevices() every 2 minutees.
 const checkRentedDevicesTimer = setInterval(function() {
   checkRentedDevices();
@@ -401,6 +372,7 @@ function checkListedDevices() {
   );
 }
 checkListedDevices(); // Call the function immediately.
+
 // Call checkRentedDevices() every 2 minutees.
 const checkListedDevicesTimer = setInterval(function() {
   checkListedDevices();

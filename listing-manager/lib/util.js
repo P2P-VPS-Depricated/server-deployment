@@ -7,14 +7,16 @@
 
 "use strict";
 
+// Dependencies
 const rp = require("request-promise");
+
+// Global Variables
+const clientID = "yourUsername";
+const clientSecret = "yourPassword";
 
 // Generate an auth key for the header.Required fall all OpenBazaar API calls.
 function getOBAuth() {
   //debugger;
-
-  const clientID = "yourUsername";
-  const clientSecret = "yourPassword";
 
   //Encoding as per Centro API Specification.
   const combinedCredential = `${clientID}:${clientSecret}`;
