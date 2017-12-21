@@ -26,6 +26,10 @@ const ExpressServer = require("./lib/express-server.js");
 const expressServer = new ExpressServer(app, port);
 expressServer.start();
 
+// Initialize the debugging logger.
+const Logger = require("./lib/logger.js");
+const logr = new Logger();
+
 const apiCredentials = util.getOBAuth();
 
 /*
@@ -41,7 +45,7 @@ function checkNotifications() {
   let thisNotice; // Will not stay here. Just for testing.
 
   const now = new Date();
-  console.log(`Listing Manager checking for new orders at ${now}`);
+  logr.info(`Listing Manager checking for new orders at ${now}`);
 
   const config = {
     apiCredentials: apiCredentials,
