@@ -22,7 +22,7 @@ const app = express();
 const port = 3434;
 
 // Create an Express server. Future development will allow serving of webpages and creation of Client API.
-const ExpressServer = require("../../lib/express-server.js");
+const ExpressServer = require("./lib/express-server.js");
 const expressServer = new ExpressServer(app, port);
 expressServer.start();
 
