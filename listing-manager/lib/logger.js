@@ -16,7 +16,7 @@ class Logger {
   constructor() {
     // Set up the Winston logging.
     winston.add(winston.transports.File, {
-      filename: "listing-manager.log",
+      filename: "./log/listing-manager.log",
       maxFiles: 1,
       colorize: false,
       timestamp: true,
