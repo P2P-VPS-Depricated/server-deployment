@@ -16,5 +16,7 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+RUN pwd
+
 EXPOSE 3434
 CMD [ "npm", "start" ]
