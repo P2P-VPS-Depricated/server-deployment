@@ -18,3 +18,4 @@ mkdir open-bazaar/data
 mkdir ~/.p2pvps
 mkdir ~/.p2pvps/logs
 mkdir ~/.p2pvps/logs/listing-manager
+mkdir ~/.p2pvps/openbazaar
