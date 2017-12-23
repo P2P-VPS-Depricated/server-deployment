@@ -245,6 +245,7 @@ function checkRentedDevices() {
 
       if (err.statusCode >= 500)
         console.error("Connection to the server was refused. Will try again.");
+      else if (err.statusCode === 404) console.error("Server returned 404. Is the server running?");
       else console.error(JSON.stringify(err, null, 2));
     });
 }
