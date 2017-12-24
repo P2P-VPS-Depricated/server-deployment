@@ -21,6 +21,10 @@ const util = require("./lib/util.js");
 const app = express();
 const port = 3434;
 
+const CHECK_OB_NOTIFICATIONS_INTERVAL = 2 * 60000; // 2 minutes
+const CHECK_RENTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
+const CHECK_LISTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
+
 // Create an Express server. Future development will allow serving of webpages and creation of Client API.
 const ExpressServer = require("./lib/express-server.js");
 const expressServer = new ExpressServer(app, port);
@@ -185,11 +189,11 @@ function checkNotifications() {
 // Call checkNotifications() every 2 minutees.
 const notificationTimer = setInterval(function() {
   checkNotifications();
-}, 120000);
+}, CHECK_OB_NOTIFICATIONS_INTERVAL);
 checkNotifications(); // Call right away at startup.
 
 // Amount of time (mS) a device can go without checking in.
-const MAX_DELAY = 60000 * 6; // 10 minutes.
+const MAX_DELAY = 60000 * 10; // 10 minutes.
 
 // Check all rented devices to ensure their connection is active.
 function checkRentedDevices() {
@@ -254,7 +258,7 @@ checkRentedDevices(); // Call the function immediately.
 // Call checkRentedDevices() every 2 minutees.
 const checkRentedDevicesTimer = setInterval(function() {
   checkRentedDevices();
-}, 120000);
+}, CHECK_RENTED_DEVICES_INTERVAL);
 
 // Check all listings in the OB market to ensure their connection is active.
 function checkListedDevices() {
@@ -381,4 +385,4 @@ checkListedDevices(); // Call the function immediately.
 // Call checkRentedDevices() every 2 minutees.
 const checkListedDevicesTimer = setInterval(function() {
   checkListedDevices();
-}, 120000);
+}, CHECK_LISTED_DEVICES_INTERVAL);
