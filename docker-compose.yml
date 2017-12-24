@@ -42,4 +42,5 @@ connextcms:
     - ./theme:/home/connextcms/theme
     - ./plugins:/home/connextcms/plugins
     - ./public:/home/connextcms/public
+    - ~/.p2pvps/logs/p2pvps-server:/home/connextcms/logs
   restart: always

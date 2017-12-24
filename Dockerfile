@@ -58,6 +58,7 @@ VOLUME /data/db
 VOLUME /home/connextcms/theme
 VOLUME /home/connextcms/plugins
 VOLUME /home/connextcms/public
+VOLUME /home/connextcms/logs
 
 #Log into the shell as the newly created user
 USER connextcms

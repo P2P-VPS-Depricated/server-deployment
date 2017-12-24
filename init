@@ -19,3 +19,4 @@ mkdir ~/.p2pvps
 mkdir ~/.p2pvps/logs
 mkdir ~/.p2pvps/logs/listing-manager
 mkdir ~/.p2pvps/openbazaar
+mkdir ~/.p2pvps/logs/p2pvps-server
