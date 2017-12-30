@@ -15,7 +15,7 @@ RUN git pull
 #RUN git checkout altcoins-rc1
 #RUN git pull
 VOLUME /var/lib/openbazaar
-RUN go run openbazaard.go init -t -d /var/lib/openbazaar
+RUN go run openbazaard.go init -d /var/lib/openbazaar
 COPY config /var/lib/openbazaar/config
 
 #WORKDIR /go/src/github.com/OpenBazaar/openbazaar-go
@@ -32,4 +32,4 @@ EXPOSE 4001 4002 9005
 #ENTRYPOINT ["/opt/openbazaard"]
 
 
-CMD ["go", "run", "openbazaard.go", "start", "-t", "-d", "/var/lib/openbazaar/"]
+CMD ["go", "run", "openbazaard.go", "start", "-d", "/var/lib/openbazaar/"]
