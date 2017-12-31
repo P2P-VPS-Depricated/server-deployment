@@ -2,3 +2,5 @@ db
 theme
 data
 public
+node_modules
+*.log

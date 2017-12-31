@@ -11,11 +11,13 @@ openbazaar:
    - "4002:4002"
    - "9005:9005"
   volumes:
-   - ./open-bazaar/data:/var/lib/openbazaar
+   - ~/.p2pvps/openbazaar:/var/lib/openbazaar
   restart: always
 
 listing-manager:
   image: listing-manager
+  volumes:
+    - ~/.p2pvps/logs/listing-manager:/usr/src/app/logs
   restart: always
 
 mongodb:
@@ -40,4 +42,5 @@ connextcms:
     - ./theme:/home/connextcms/theme
     - ./plugins:/home/connextcms/plugins
     - ./public:/home/connextcms/public
+    - ~/.p2pvps/logs/p2pvps-server:/home/connextcms/logs
   restart: always

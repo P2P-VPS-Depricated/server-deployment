@@ -19,8 +19,7 @@ echo Running finalsetup script
 #cp -r public/* ~/public
 
 #["/usr/sbin/sshd", "-D", "-p", "4100"]
-/usr/sbin/sshd -D -p 6100 &
+/usr/sbin/sshd -p 6100 &
 
 #Launch KeystoneJS and ConnextCMS
 exec "$@"
-

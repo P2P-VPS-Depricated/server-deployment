@@ -18,6 +18,6 @@ cd
 cd myCMS
 echo 'Preparing to run npm install'
 npm install
+npm install --save winston
 cp ~/keystone.js .
 cp ~/dummyapp.js .
-

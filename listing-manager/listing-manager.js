@@ -1,59 +1,46 @@
+/*
+  The Listing Manager has the following responsibilities:
+
+  * Poll the OpenBazaar (OB) store for new orders and fulfill those orders when they
+  are detected.
+
+  * Monitor Clients with listings in the OB store. Reboot them if they lose connection
+  with the server, by manipulating the expiration date.
+
+  * Monitor Clients that are actively being rented. Reboot them and generate a pro-rated
+  refund if the device loses connection with the server.
+*/
+
 "use strict";
 
+// Dependencies.
 const express = require("express");
-const fs = require("fs");
-const rp = require("request-promise");
-const util = require("./util.js");
+const util = require("./lib/util.js");
 
+// Global Variables
 const app = express();
 const port = 3434;
 
-// Use Handlebars for templating
-const exphbs = require("express3-handlebars");
-let hbs;
+const CHECK_OB_NOTIFICATIONS_INTERVAL = 2 * 60000; // 2 minutes
+const CHECK_RENTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
+const CHECK_LISTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
 
-// Config for Production and Development
-//app.engine('handlebars', exphbs({
-// Default Layout and locate layouts and partials
-//   defaultLayout: 'main',
-//   layoutsDir: 'views/layouts/',
-//   partialsDir: 'views/partials/'
-//}));
+// Create an Express server. Future development will allow serving of webpages and creation of Client API.
+const ExpressServer = require("./lib/express-server.js");
+const expressServer = new ExpressServer(app, port);
+expressServer.start();
 
-// Locate the views
-//app.set('views', __dirname + '/views');
-
-// Locate the assets
-//app.use(express.static(__dirname + '/assets'));
-
-// Set Handlebars
-//app.set('view engine', 'handlebars');
-
-/*
- * Routes
-//Allow CORS
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
-// Index Page
-app.get('/', function(request, response, next) {
-    response.render('index');
-});
-
-//Request Handler/Webserver functions
-app.use('/listLogFiles', requestHandlers.listLogFiles);
-app.use('/queryTracking', requestHandlers.queryTracking);
-*/
-
-/* Start up the Express web server */
-app.listen(process.env.PORT || port);
-console.log(`Listing Manager started on port ${port}`);
+// Initialize the debugging logger.
+const Logger = require("./lib/logger.js");
+const logr = new Logger();
 
 const apiCredentials = util.getOBAuth();
 
+/*
+  This function checks for order notications from the OpenBazaar (OB) store.
+  When a new order comes in, it marks the order 'Fulfilled' and sends the login
+  information to the Renter.
+*/
 function checkNotifications() {
   //debugger;
 
@@ -62,7 +49,7 @@ function checkNotifications() {
   let thisNotice; // Will not stay here. Just for testing.
 
   const now = new Date();
-  console.log(`Listing Manager checking for new orders at ${now}`);
+  logr.info(`Listing Manager checking for new orders at ${now}`);
 
   const config = {
     apiCredentials: apiCredentials,
@@ -83,9 +70,7 @@ function checkNotifications() {
       // Exit if the notice is not for an order.
       if (thisNotice.notification.type !== "order") return null;
 
-      //debugger;
-
-      // Get device ID from listing
+      // Get device ID from the listing
       const tmp = thisNotice.notification.slug.split("-");
       const deviceId = tmp[tmp.length - 1];
 
@@ -126,8 +111,6 @@ function checkNotifications() {
     // Fulfill order with login information.
     .then(privateData => {
       if (privateData == null) return null;
-
-      //debugger;
 
       const config = {
         devicePrivateData: privateData,
@@ -206,11 +189,11 @@ function checkNotifications() {
 // Call checkNotifications() every 2 minutees.
 const notificationTimer = setInterval(function() {
   checkNotifications();
-}, 120000);
-checkNotifications();
+}, CHECK_OB_NOTIFICATIONS_INTERVAL);
+checkNotifications(); // Call right away at startup.
 
 // Amount of time (mS) a device can go without checking in.
-const MAX_DELAY = 60000 * 6; // 10 minutes.
+const MAX_DELAY = 60000 * 10; // 10 minutes.
 
 // Check all rented devices to ensure their connection is active.
 function checkRentedDevices() {
@@ -250,9 +233,7 @@ function checkRentedDevices() {
 
               .then(() => {
                 console.log(
-                  `Device ${
-                    thisDeviceId
-                  } has been removed from the rented devices list due to inactivity.`
+                  `Device ${thisDeviceId} has been removed from the rented devices list due to inactivity.`
                 );
               })
           );
@@ -268,14 +249,16 @@ function checkRentedDevices() {
 
       if (err.statusCode >= 500)
         console.error("Connection to the server was refused. Will try again.");
+      else if (err.statusCode === 404) console.error("Server returned 404. Is the server running?");
       else console.error(JSON.stringify(err, null, 2));
     });
 }
 checkRentedDevices(); // Call the function immediately.
+
 // Call checkRentedDevices() every 2 minutees.
 const checkRentedDevicesTimer = setInterval(function() {
   checkRentedDevices();
-}, 120000);
+}, CHECK_RENTED_DEVICES_INTERVAL);
 
 // Check all listings in the OB market to ensure their connection is active.
 function checkListedDevices() {
@@ -398,7 +381,8 @@ function checkListedDevices() {
   );
 }
 checkListedDevices(); // Call the function immediately.
+
 // Call checkRentedDevices() every 2 minutees.
 const checkListedDevicesTimer = setInterval(function() {
   checkListedDevices();
-}, 120000);
+}, CHECK_LISTED_DEVICES_INTERVAL);

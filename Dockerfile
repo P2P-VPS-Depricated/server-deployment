@@ -58,16 +58,17 @@ VOLUME /data/db
 VOLUME /home/connextcms/theme
 VOLUME /home/connextcms/plugins
 VOLUME /home/connextcms/public
+VOLUME /home/connextcms/logs
 
 #Log into the shell as the newly created user
 USER connextcms
 
 #Clone the keystone files.
-RUN git clone https://github.com/skagitpublishing/keystone4-compiled
+RUN git clone https://github.com/christroutner/keystone4-compiled
 RUN mv keystone4-compiled keystone4
 
 #Clone ConnextCMS
-RUN git clone https://github.com/skagitpublishing/ConnextCMS
+RUN git clone https://github.com/christroutner/ConnextCMS
 RUN mv ConnextCMS connextCMS
 
 #Clone plugins

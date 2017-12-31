@@ -7,14 +7,16 @@
 
 "use strict";
 
+// Dependencies
 const rp = require("request-promise");
+
+// Global Variables
+const clientID = "yourUsername";
+const clientSecret = "yourPassword";
 
 // Generate an auth key for the header.Required fall all OpenBazaar API calls.
 function getOBAuth() {
   //debugger;
-
-  const clientID = "yourUsername";
-  const clientSecret = "yourPassword";
 
   //Encoding as per Centro API Specification.
   const combinedCredential = `${clientID}:${clientSecret}`;
@@ -32,11 +34,11 @@ function updateExpiration(deviceId, timeSelector) {
 
     let targetTime = 0;
     switch (timeSelector) {
-      case 0: // Now
+      case 0: // Now - force device reset.
         targetTime = 0;
         break;
-      case 10: // 2 minutes
-        targetTime = 60000 * 2;
+      case 10: // Testing
+        targetTime = 60000 * 8;
         break;
       case 20: // 1 hr
         targetTime = 60000 * 60;
@@ -64,10 +66,19 @@ function updateExpiration(deviceId, timeSelector) {
         // Update the model with a new expiration date.
         .then(function(data) {
           //debugger;
-
+          console.log(
+            `Expiration before: ${data.collection.expiration}, type: ${typeof data.collection
+              .expiration}`
+          );
           const now = new Date();
           const expirationDate = new Date(now.getTime() + targetTime);
           data.collection.expiration = expirationDate.toISOString();
+          //data.collection.expiration = expirationDate;
+
+          console.log(
+            `Expiration after: ${data.collection.expiration}, type: ${typeof data.collection
+              .expiration}`
+          );
 
           // Update the model.
           const options = {

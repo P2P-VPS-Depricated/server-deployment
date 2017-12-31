@@ -16,5 +16,8 @@ RUN npm install
 # Bundle app source
 COPY . .
 
+#RUN pwd
+VOLUME /usr/src/app/logs
+
 EXPOSE 3434
 CMD [ "npm", "start" ]
