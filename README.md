@@ -1,18 +1,19 @@
 # docker-connextcms-p2pvps
 
-This repository is a collection of Docker files, orchestrated to work together using Docker Compose,
-in order to support and run the [P2P VPS Server](https://github.com/RPiOVN/p2pvps-server). The software
+This repository is a collection of Docker files, orchestrated to work together
+using Docker Compose, in order to support and run the
+[P2P VPS Server](https://github.com/RPiOVN/p2pvps-server). The software
 stack can be illustrated as below, and you can read all the details in [the specifications](specifications).
 
-![Software Stack](https://github.com/RPiOVN/p2pvps-server/blob/b1fd8e709f264db4a1d869e8939033ca39a895da/specifications/images/software-stack.jpg?raw=true "Software Stack")
+![Software Stack](software-stack.jpg?raw=true "Software Stack")
 
 Note: This repository was originally forked from the [docker-connextcms](https://github.com/christroutner/docker-connextcms) parent repository.
 It upgrades the ConnextCMS docker container to use v8 of node.js.
 
 
 ## Installation (Rough Draft)
-It's assumed that you are starting with a fresh installation of Ubuntu 16.04 LTS on a 64-bit machine. 
-It's also assumed that you are installing as a [non-root user with sudo privileges](https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04). 
+It's assumed that you are starting with a fresh installation of Ubuntu 16.04 LTS on a 64-bit machine.
+It's also assumed that you are installing as a [non-root user with sudo privileges](https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04).
 
 1. Install Docker on the host system. [This tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04)
 shows how to install Docker on a Ubuntu 16.04 system. It's specifically targeted to Digital Ocean's cloud servers, but
@@ -34,7 +35,7 @@ Build the OpenBazaar Docker images by running `./buildImage`.
 5. Enter the `docker-connextcms-p2pvps/sshd-container` directory and build that image with
 `./buildImage`.
 
-6. Enter the `docker-connextcms-p2pvps` directory and build the ConnextCMS docker container. 
+6. Enter the `docker-connextcms-p2pvps` directory and build the ConnextCMS docker container.
 The `--no-cache` option should be used to prevent issues with symbolic links:
 `docker-compose build --no-cache`
 
@@ -54,10 +55,10 @@ Once back to a command line, run `docker-compose down` to clean up. Then navigat
 The current config file has username/password set as `yourUsername/yourPassword`, and no SSL encryption
 on connection. Both of these should be updated.
 
-* Go back to the `docker-connextcms-p2pvps` directory and run the containers again with 
+* Go back to the `docker-connextcms-p2pvps` directory and run the containers again with
 `docker-compose up`. Verify that everything runs correctly. Then you can bring them back down
  again with `docker-compose up -d`.
- 
+
 * Go back to your home directory and clone the `p2pvps-server` repo. Compile the marketplace code
 with `npm install`. Then generate the site template with `./generateSiteTemplate`. Finally, copy the
 site template with `./uploadToConnextCMS`.
@@ -65,7 +66,7 @@ site template with `./uploadToConnextCMS`.
 * You can now bring the server online with one final `docker-compose up -d` in the `docker-connextcms-p2pvps`
 directory.
 
-Docker will then launch the ConnextCMS Docker image. At the end, KeystoneJS will be running on port 3000, 
+Docker will then launch the ConnextCMS Docker image. At the end, KeystoneJS will be running on port 3000,
 with ConnextCMS running with it. For additional information on how to setup a production server with this container,
 [see the three-part video series on ConnextCMS.com](http://connextcms.com/page/videos).
 
