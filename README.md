@@ -5,7 +5,7 @@ using Docker Compose, in order to support and run the
 [P2P VPS Server](https://github.com/RPiOVN/p2pvps-server). The software
 stack can be illustrated as below, and you can read all the details in [the specifications](specifications).
 
-![Software Stack](software-stack.jpg?raw=true "Software Stack")
+![Software Stack](server-stack.jpg?raw=true "Software Stack")
 
 Note: This repository was originally forked from the [docker-connextcms](https://github.com/christroutner/docker-connextcms) parent repository.
 It upgrades the ConnextCMS docker container to use v8 of node.js.
