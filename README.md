@@ -94,7 +94,8 @@ below help you to enter a shell inside the container.
 # License
 MIT License
 
-Copyright (c) 2017 Skagit Publishing
+Copyright (c) 2018 [Chris Troutner](http://christroutner.com) &
+[P2P VPS Inc](http://p2pvps.org)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
