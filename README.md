@@ -1,9 +1,9 @@
-# docker-connextcms-p2pvps
+# server-deployment
 
 This repository is a collection of Docker files, orchestrated to work together
 using Docker Compose, in order to support and run the
-[P2P VPS Server](https://github.com/RPiOVN/p2pvps-server). The software
-stack can be illustrated as below, and you can read all the details in [the specifications](specifications).
+[P2P VPS Server](https://github.com/P2PVPS/p2pvps-server). The software
+stack can be illustrated as below, and you can read all the details in [the specifications](http://p2pvps.org/documentation/).
 
 ![Software Stack](server-stack.jpg?raw=true "Software Stack")
 
@@ -25,17 +25,17 @@ running a $5 server for two months.
 shows how to do so on a Ubuntu system.
 
 3. Clone this repository in your home directory with the following command:
-`git clone https://github.com/RPiOVN/docker-connextcms-p2pvps`
+`git clone https://github.com/RPiOVN/server-deployment`
 
-* Enter the new `docker-connextcms-p2pvps` directory, then initialize the repository by running `./init`.
+* Enter the new `server-deployment` directory, then initialize the repository by running `./init`.
 
 4.  Enter the `openBazaar` subdirectory.
 Build the OpenBazaar Docker images by running `./buildImage`.
 
-5. Enter the `docker-connextcms-p2pvps/sshd-container` directory and build that image with
+5. Enter the `server-deployment/sshd-container` directory and build that image with
 `./buildImage`.
 
-6. Enter the `docker-connextcms-p2pvps` directory and build the ConnextCMS docker container.
+6. Enter the `server-deployment` directory and build the ConnextCMS docker container.
 The `--no-cache` option should be used to prevent issues with symbolic links:
 `docker-compose build --no-cache`
 
@@ -55,7 +55,7 @@ Once back to a command line, run `docker-compose down` to clean up. Then navigat
 The current config file has username/password set as `yourUsername/yourPassword`, and no SSL encryption
 on connection. Both of these should be updated.
 
-* Go back to the `docker-connextcms-p2pvps` directory and run the containers again with
+* Go back to the `server-deployment` directory and run the containers again with
 `docker-compose up`. Verify that everything runs correctly. Then you can bring them back down
  again with `docker-compose up -d`.
 
@@ -63,7 +63,7 @@ on connection. Both of these should be updated.
 with `npm install`. Then generate the site template with `./generateSiteTemplate`. Finally, copy the
 site template with `./uploadToConnextCMS`.
 
-* You can now bring the server online with one final `docker-compose up -d` in the `docker-connextcms-p2pvps`
+* You can now bring the server online with one final `docker-compose up -d` in the `server-deployment`
 directory.
 
 Docker will then launch the ConnextCMS Docker image. At the end, KeystoneJS will be running on port 3000,
