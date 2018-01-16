@@ -9,6 +9,13 @@
 
   * Monitor Clients that are actively being rented. Reboot them and generate a pro-rated
   refund if the device loses connection with the server.
+
+  ---WIP---
+  * Poll the OB store for purchases of renewal listings and increment the
+  expiration date of the Client.
+
+  * Monitor renewal listings and remove any that are unpaid after 1 hr.
+
 */
 
 "use strict";
@@ -111,6 +118,9 @@ function checkNotifications() {
     // Fulfill order with login information.
     .then(privateData => {
       if (privateData == null) return null;
+
+      // TODO If the order is a renewal, then adjust the code path at this point.
+      // Note, expiration date is auotmatically updated in the next promise.
 
       const config = {
         devicePrivateData: privateData,
