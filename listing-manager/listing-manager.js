@@ -39,6 +39,9 @@ const CHECK_LISTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
 // Amount of time (mS) a device can go without checking in.
 const MAX_DELAY = 60000 * 10; // 10 minutes.
 
+// Time to wait for client to voluntarily re-register.
+const BUFFER = 60000 * 5;
+
 // OpenBazaar Credentials
 const OB_USERNAME = "yourUsername";
 const OB_PASSWORD = "yourPassword";
@@ -207,132 +210,71 @@ const checkRentedDevicesTimer = setInterval(function() {
 }, CHECK_RENTED_DEVICES_INTERVAL);
 
 // Check all listings in the OB market to ensure their connection is active.
-function checkListedDevices() {
+async function checkListedDevices() {
   //debugger;
 
-  const config = {
-    apiCredentials: apiCredentials,
-  };
+  try {
+    const listings = await openbazaar.getListings(config);
 
-  return (
-    openbazaar
-      // Get all the listing on this OpenBazaar store.
-      .getListings(config)
+    for (let i = 0; i < listings.length; i++) {
+      // Get device ID from listing slug
+      const thisSlug = listings[i].slug;
+      const tmp = thisSlug.split("-");
+      const thisDeviceId = tmp[tmp.length - 1];
 
-      // Loop through each device.
-      .then(async listings => {
-        //debugger;
+      // Get the devicePublicModel for the current listing.
+      const publicData = await util.getDevicePublicModel(config, thisDeviceId);
 
-        for (let i = 0; i < listings.length; i++) {
-          // Get device ID from listing slug
-          const thisSlug = listings[i].slug;
-          const tmp = thisSlug.split("-");
-          const thisDeviceId = tmp[tmp.length - 1];
-
-          // Get the devicePublicModel for the current listing.
-          const publicData = await util.getDevicePublicModel(config, thisDeviceId);
-
-          const checkinTimeStamp = new Date(publicData.checkinTimeStamp);
-          const now = new Date();
-          const delay = now.getTime() - checkinTimeStamp.getTime();
-
-          // If device has taken too long to check in.
-          if (delay > MAX_DELAY) {
-            debugger;
-
-            console.log(`delay: ${delay}, MAX_DELAY: ${MAX_DELAY}`);
-
-            return (
-              util
-                // Set the device expiration to now.
-                .updateExpiration(thisDeviceId, 0)
-
-                // Remove the listing from the OB store.
-                .then(() => {
-                  debugger;
-                  return (
-                    util
-                      .removeOBListing(publicData)
-                      //.then(val => {
-                      //  console.log(`OB listing for ${thisDeviceId} successfully removed.`);
-                      //})
-                      .catch(err => {
-                        console.error(`Could not remove OB listing for ${thisDeviceId}`);
-                        if (err.statusCode >= 500) {
-                          console.error(
-                            `There was an issue with finding the listing on the OpenBazaar server. Skipping.`
-                          );
-                        } else {
-                          console.error(JSON.stringify(err, null, 2));
-                        }
-                      })
-                  );
-                })
-
-                .then(() => {
-                  console.log(`OB listing for ${thisDeviceId} has been removed due to inactivity.`);
-                })
-            );
-          }
-
-          const expiration = new Date(publicData.expiration);
-
-          const BUFFER = 60000 * 5; // Time to wait for client to voluntarily re-register.
-
-          // If the device expiration date has been reached, remove the listing.
-          if (expiration.getTime() + BUFFER < now.getTime()) {
-            debugger;
-
-            return util
-              .removeOBListing(publicData)
-              .then(val => {
-                console.log(
-                  `OB listing for ${thisDeviceId} has been removed due to expiration date reached.`
-                );
-              })
-              .catch(err => {
-                console.error(`Could not remove OB listing for ${thisDeviceId}`);
-                if (err.statusCode >= 500) {
-                  console.error(
-                    `There was an issue with finding the listing on the OpenBazaar server. Skipping.`
-                  );
-                } else {
-                  console.error(JSON.stringify(err, null, 2));
-                }
-              });
-          }
-        }
-
-        return true;
-      })
+      // Calculate the delay since the client last checked in.
+      const checkinTimeStamp = new Date(publicData.checkinTimeStamp);
+      const now = new Date();
+      const delay = now.getTime() - checkinTimeStamp.getTime();
 
       // If device has taken too long to check in.
-      // Set the device expiration to now.
-
-      .catch(err => {
+      if (delay > MAX_DELAY) {
         debugger;
-        console.error(`Error trying to check store listings: `);
 
-        if (err.cause) {
-          if (err.cause.code === "ECONNREFUSED" || err.cause.code === "ECONNRESET")
-            console.error("Connection to the server was refused. Will try again.");
-          else console.error(JSON.stringify(err, null, 2));
-        } else if (err.statusCode === 502) {
-          console.error("Connection to the server was refused. Will try again.");
-        } else {
-          if (err.message) console.error(`Error message: ${err.message}`);
-          console.error(JSON.stringify(err, null, 2));
-        }
-      })
-  );
+        logr.log(`delay: ${delay}, MAX_DELAY: ${MAX_DELAY}`);
+
+        // Set the device expiration to now, to force a reboot when it comes online.
+        await util.updateExpiration(config, thisDeviceId, 0);
+
+        // Remove the listing from the OB store.
+        await util.removeOBListing(config, publicData);
+
+        logr.log(`OB listing for ${thisDeviceId} has been removed due to inactivity.`);
+      }
+
+      // If the device expiration date has been reached, remove the listing.
+      const expiration = new Date(publicData.expiration);
+      if (expiration.getTime() + BUFFER < now.getTime()) {
+        debugger;
+
+        // Remove the listing from the OB store.
+        await util.removeOBListing(config, publicData);
+
+        logr.log(`OB listing for ${thisDeviceId} has been removed due to expiration date reached.`);
+      }
+    }
+
+    return true;
+  } catch (err) {
+    debugger;
+    logr.error(`Error in listing-manager.js/checkListedDevices(): ${err}`);
+
+    if (err.statusCode >= 500) logr.error("Connection to the server was refused. Will try again.");
+    else if (err.statusCode === 404) logr.error("Server returned 404. Is the server running?");
+    else logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+  }
 }
-//checkListedDevices(); // Call the function immediately.
+checkListedDevices(); // Call the function immediately.
 
 // Call checkRentedDevices() every 2 minutees.
-//const checkListedDevicesTimer = setInterval(function() {
-//  checkListedDevices();
-//}, CHECK_LISTED_DEVICES_INTERVAL);
+const checkListedDevicesTimer = setInterval(function() {
+  checkListedDevices();
+}, CHECK_LISTED_DEVICES_INTERVAL);
 
+// Reset the global config variable.
 function resetConfig() {
   config = {
     // Config object passed to library functions.
