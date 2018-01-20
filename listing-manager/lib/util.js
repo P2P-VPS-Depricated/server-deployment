@@ -12,8 +12,8 @@
 const rp = require("request-promise");
 
 // This function updates the expiration date of a devices devicePublicData model.
-function updateExpiration(deviceId, timeSelector) {
-  return new Promise(function(resolve, reject) {
+async function updateExpiration(config, deviceId, timeSelector) {
+  try {
     //debugger;
 
     let targetTime = 0;
@@ -41,56 +41,39 @@ function updateExpiration(deviceId, timeSelector) {
     }
 
     // Get the devicePublicData model.
-    const options = {
+    let options = {
       method: "GET",
-      uri: `http://p2pvps.net/api/devicePublicData/${deviceId}`,
+      uri: `${config.server}/api/devicePublicData/${deviceId}`,
       json: true,
     };
-    return (rp(options)
-        // Update the model with a new expiration date.
-        .then(function(data) {
-          //debugger;
-          console.log(
-            `Expiration before: ${data.collection.expiration}, type: ${typeof data.collection
-              .expiration}`
-          );
-          const now = new Date();
-          const expirationDate = new Date(now.getTime() + targetTime);
-          data.collection.expiration = expirationDate.toISOString();
-          //data.collection.expiration = expirationDate;
+    const data = await rp(options);
 
-          console.log(
-            `Expiration after: ${data.collection.expiration}, type: ${typeof data.collection
-              .expiration}`
-          );
+    console.log(
+      `Expiration before: ${data.collection.expiration}, type: ${typeof data.collection.expiration}`
+    );
 
-          // Update the model.
-          const options = {
-            method: "POST",
-            uri: `http://p2pvps.net/api/devicePublicData/${deviceId}/update`,
-            body: data.collection,
-            json: true,
-          };
-          return (rp(options)
-              // Return success or failure.
-              .then(updatedData => {
-                debugger;
+    // Calculate a new expiration date.
+    const now = new Date();
+    const expirationDate = new Date(now.getTime() + targetTime);
+    data.collection.expiration = expirationDate.toISOString();
 
-                // Verify that the returned value contains the new date.
-                if (updatedData.collection.expiration) return resolve(true);
-                return resolve(false);
-              })
+    // Update the devicePublicModel with a new expiration date.
+    options = {
+      method: "POST",
+      uri: `${config.server}/api/devicePublicData/${deviceId}/update`,
+      body: data.collection,
+      json: true,
+    };
+    const updatedData = await rp(options);
 
-              .catch(err => {
-                throw err;
-              }) );
-        })
-
-        .catch(err => {
-          console.error("Error in updateExpiration: ", err);
-          return reject(err);
-        }) );
-  });
+    // Verify that the returned value contains the new date.
+    if (updatedData.collection.expiration) return true;
+    return false;
+  } catch (err) {
+    config.logr.error(`Error in util.js/updateExpiration(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
 }
 
 // This function gets all the notifications from the OB server.
@@ -177,7 +160,7 @@ Password: ${config.devicePrivateData.devicePassword}
     };
 
     // Fulfill the order.
-    const data = await openbazaar.fulfillOrder(config, bodyData);
+    await openbazaar.fulfillOrder(config, bodyData);
 
     console.log(`OrderId ${config.obNotice.notification.orderId} has been marked as fulfilled.`);
 
@@ -190,27 +173,26 @@ Password: ${config.devicePrivateData.devicePassword}
 }
 
 // This function adds a deviceId to the rentedDevice list model.
-function addRentedDevice(deviceId) {
+async function addRentedDevice(config, deviceId) {
   //debugger;
 
-  const options = {
-    method: "GET",
-    uri: `http://p2pvps.net/api/rentedDevices/add/${deviceId}`,
-    json: true, // Automatically stringifies the body to JSON
-  };
+  try {
+    const options = {
+      method: "GET",
+      uri: `${config.server}/api/rentedDevices/add/${deviceId}`,
+      json: true, // Automatically stringifies the body to JSON
+    };
 
-  return rp(options)
-    .then(function(data) {
-      //debugger;
+    const data = await rp(options);
 
-      if (!data.success) throw `Could not add device ${deviceId} to rentedDevices list model.`;
+    if (!data.success) throw `Could not add device ${deviceId} to rentedDevices list model.`;
 
-      return true;
-    })
-    .catch(err => {
-      console.error(`Could not add device ${deviceId} to rentedDevices list model.`);
-      throw err;
-    });
+    return true;
+  } catch (err) {
+    config.logr.error(`Error in util.js/addRentedDevice(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
 }
 
 // This function removes a deviceId from the rentedDevices list model
@@ -238,70 +220,57 @@ function removeRentedDevice(deviceId) {
 }
 
 // This function marks a notification as read in Open Bazaar.
-function markNotificationAsRead(config) {
-  //debugger;
+async function markNotificationAsRead(config) {
+  try {
+    const noteId = config.obNotice.notification.notificationId;
 
-  const noteId = config.obNotice.notification.notificationId;
+    const body = {
+      notificationId: noteId,
+    };
 
-  const body = {
-    notificationId: noteId,
-  };
+    await openbazaar.markNotificationAsRead(config, body);
 
-  const options = {
-    method: "POST",
-    uri: `http://p2pvps.net:4002/ob/marknotificationasread/${noteId}`,
-    body: {},
-    json: true, // Automatically stringifies the body to JSON
-    headers: {
-      Authorization: config.apiCredentials,
-    },
-  };
+    config.logr.debug(`Notification ${noteId} has been marked as 'read'.`);
 
-  return rp(options)
-    .then(function(data) {
-      //debugger;
-      console.log(`Notification ${noteId} has been marked as 'read'.`);
-      return true;
-    })
-    .catch(err => {
-      debugger;
-      console.log('Error trying to mark notificatioin as "Read".');
-      throw err;
-    });
+    return true;
+  } catch (err) {
+    debugger;
+    config.logr.error(`Error in util.js/markNotificationAsRead(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    config.logr.error(`openbazaar returned: ${data}`);
+    throw err;
+  }
 }
 
-// This function remove the associated listing from the OB store.
-function removeOBListing(deviceData) {
+// This function remove the associated obContract model from the server,
+// This also has the effect of removing the listing from the OB store.
+async function removeOBListing(config, deviceData) {
   //debugger;
+  try {
+    const obContractId = deviceData.obContract;
 
-  const obContractId = deviceData.obContract;
+    // Validation/Error Handling
+    if (obContractId === undefined || obContractId === null)
+      throw `no obContract model associated with device ${deviceData._id}`;
 
-  // Validation/Error Handling
-  if (obContractId === undefined || obContractId === null)
-    throw `no obContract model associated with device ${deviceData._id}`;
+    const options = {
+      method: "GET",
+      uri: `${config.server}/api/ob/removeMarketListing/${obContractId}`,
+      json: true, // Automatically stringifies the body to JSON
+    };
 
-  const options = {
-    method: "GET",
-    uri: `http://p2pvps.net/api/ob/removeMarketListing/${obContractId}`,
-    json: true, // Automatically stringifies the body to JSON
-  };
+    const data = await rp(options);
 
-  return rp(options)
-    .then(function(data) {
-      //debugger;
+    if (!data.success)
+      throw `Could not remove device ${obContractId} from rentedDevices list model.`;
 
-      if (!data.success)
-        throw `Could not remove device ${obContractId} from rentedDevices list model.`;
-
-      //console.log(
-      //  `Successfully removed listing on OB store with obContract model ID ${obContractId}`
-      //);
-      return true;
-    })
-    .catch(err => {
-      console.error(`Could not remove device ${obContractId} from rentedDevices list model.`);
-      throw err;
-    });
+    return true;
+  } catch (err) {
+    debugger;
+    config.logr.error(`Error in util.js/removeOBListing(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
 }
 
 // This function returns an array of devicePublicModel IDs stored in the rentedDevices model.

@@ -41,7 +41,7 @@ const OB_PASSWORD = "yourPassword";
 
 // Server Information
 const SERVER_URL = "http://p2pvps.net";
-const SERVER_PORT = "4002";
+const SERVER_PORT = "4002"; // Open Bazaar port
 
 // Create an Express server. Future development will allow serving of webpages and creation of Client API.
 const ExpressServer = require("./lib/express-server.js");
@@ -104,10 +104,41 @@ async function fulfillNewOrders() {
     config.devicePrivateData = privateData;
     config.obNotice = thisNotice;
 
-    return util.fulfillOBOrder(config);
+    // Mark the order as fulfilled.
+    await util.fulfillOBOrder(config);
+
+    if (thisNotice === undefined) return null;
+
+    config.obNotice = thisNotice;
+
+    // Mark notification as read.
+    await util.markNotificationAsRead(config);
+
+    if (devicePublicData === undefined) return null;
+
+    // Update the expiration date.
+    await util.updateExpiration(config, devicePublicData._id, 10);
+
+    if (devicePublicData === undefined) return null;
+
+    // Add the device to the Rented Devices list.
+    await util.addRentedDevice(config, devicePublicData._id);
+
+    if (devicePublicData === undefined) return null;
+
+    // Remove the listing from the OB store.
+    await util.removeOBListing(config, devicePublicData);
+
+    console.log(`OB listing for ${devicePublicData._id} successfully removed.`);
   } catch (err) {
-    config.logr.error(`Error in listing-manager.js/fulfillNewOrders(): ${err}`);
-    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    if (err.statusCode >= 500) {
+      console.error(
+        `There was an issue with finding the listing on the OpenBazaar server. Skipping.`
+      );
+    } else {
+      config.logr.error(`Error in listing-manager.js/fulfillNewOrders(): ${err}`);
+      config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    }
   }
 }
 
@@ -120,7 +151,7 @@ function checkNotifications() {
   //debugger;
 
   // Higher scoped variables.
-  let devicePublicData, devicePrivateData;
+  let devicePublicData, devicePrivateDat;
   let thisNotice; // Will not stay here. Just for testing.
 
   const now = new Date();

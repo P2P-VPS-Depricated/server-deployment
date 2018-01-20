@@ -45,6 +45,20 @@ async function getNotifications(config) {
   }
 }
 
+async function markNotificationAsRead(config, body) {
+  const options = {
+    method: "POST",
+    uri: `${config.server}:${config.port}/ob/marknotificationasread/${body.notificationId}`,
+    body: {},
+    json: true, // Automatically stringifies the body to JSON
+    headers: {
+      Authorization: config.apiCredentials,
+    },
+  };
+
+  return rp(options);
+}
+
 // Mark an order as 'Fulfilled'.
 async function fulfillOrder(config, body) {
   try {
@@ -70,4 +84,5 @@ module.exports = {
   getOBAuth,
   getNotifications,
   fulfillOrder,
+  markNotificationAsRead,
 };
