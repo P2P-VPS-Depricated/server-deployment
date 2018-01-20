@@ -30,7 +30,7 @@ const rp = require("request-promise");
 const openbazaar = require("./openbazaar.js");
 
 // This function returns a devicePublicModel given the deviceId.
-async function getDevicePublicModel(deviceId, config) {
+async function getDevicePublicModel(config, deviceId) {
   try {
     const options = {
       method: "GET",
@@ -158,54 +158,54 @@ async function addRentedDevice(config, deviceId) {
 }
 
 // This function removes a deviceId from the rentedDevices list model
-function removeRentedDevice(deviceId) {
+async function removeRentedDevice(config, deviceId) {
   //debugger;
 
-  const options = {
-    method: "GET",
-    uri: `http://p2pvps.net/api/rentedDevices/remove/${deviceId}`,
-    json: true, // Automatically stringifies the body to JSON
-  };
+  try {
+    const options = {
+      method: "GET",
+      uri: `${config.server}:${config.port}/api/rentedDevices/remove/${deviceId}`,
+      json: true, // Automatically stringifies the body to JSON
+    };
 
-  return rp(options)
-    .then(function(data) {
-      //debugger;
+    const data = await rp(options);
 
-      if (!data.success) throw `Could not remove device ${deviceId} from rentedDevices list model.`;
+    if (!data.success) throw `Could not remove device ${deviceId} from rentedDevices list model.`;
 
-      return true;
-    })
-    .catch(err => {
-      console.error(`Could not remove device ${deviceId} from rentedDevices list model.`);
-      throw err;
-    });
+    return true;
+  } catch (err) {
+    debugger;
+    config.logr.error(`Error in util.js/removeRentedDevice(): ${err}`);
+    config.logr.error(`Could not remove device ${deviceId} from rentedDevices list model.`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
 }
 
 // This function returns an array of devicePublicModel IDs stored in the rentedDevices model.
-function getRentedDevices() {
+async function getRentedDevices(config) {
   //debugger;
 
-  const options = {
-    method: "GET",
-    uri: `http://p2pvps.net/api/rentedDevices/list`,
-    json: true, // Automatically stringifies the body to JSON
-  };
+  try {
+    const options = {
+      method: "GET",
+      uri: `${config.server}:${config.port}/api/rentedDevices/list`,
+      json: true, // Automatically stringifies the body to JSON
+    };
 
-  return rp(options)
-    .then(function(data) {
-      //debugger;
+    const data = await rp(options);
 
-      if (!data.collection[0]) throw `Could not find a list of rented devices on server.`;
+    if (!data.collection[0]) throw `Could not find a list of rented devices on server.`;
 
-      const retVal = data.collection[0].rentedDevices;
+    const retVal = data.collection[0].rentedDevices;
 
-      return retVal;
-    })
-    .catch(err => {
-      debugger;
-      console.error(`Could not retrieve the list of rented devices from the server.`);
-      throw err;
-    });
+    return retVal;
+  } catch (err) {
+    config.logr.error(`Error in util.js/getRentedDevices(): ${err}`);
+    config.logr.error(`Could not retrieve the list of rented devices from the server.`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
 }
 
 // This function gets all the notifications from the OB server.

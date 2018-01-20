@@ -97,7 +97,7 @@ async function fulfillNewOrders() {
     // TODO need some better validation here to detect if a valid GUID was returned.
 
     // Get devicePublicModel from the server.
-    const devicePublicModel = await util.getDevicePublicModel(deviceId, config);
+    const devicePublicModel = await util.getDevicePublicModel(config, deviceId);
 
     // Return the ID for the devicePrivateModel
     const privateId = devicePublicModel.privateData;
@@ -160,13 +160,13 @@ async function checkRentedDevices() {
 
   try {
     // Get a list of rented devices from the server.
-    const rentedDevices = await util.getRentedDevices();
+    const rentedDevices = await util.getRentedDevices(config);
 
     for (let i = 0; i < rentedDevices.length; i++) {
       const thisDeviceId = rentedDevices[i];
 
       // Get the devicePublicModel for this device.
-      const publicData = await util.getDevicePublicModel(thisDeviceId);
+      const publicData = await util.getDevicePublicModel(config, thisDeviceId);
 
       // Calculate the delay since the client last checked in.
       const checkinTimeStamp = new Date(publicData.checkinTimeStamp);
@@ -178,10 +178,10 @@ async function checkRentedDevices() {
         //debugger;
 
         // Set the device expiration to now.
-        await util.updateExpiration(thisDeviceId, 0);
+        await util.updateExpiration(config, thisDeviceId, 0);
 
         // Remove the deviceId from the rentedDevices model on the server.
-        await util.removeRentedDevice(thisDeviceId);
+        await util.removeRentedDevice(config, thisDeviceId);
 
         logr.log(
           `Device ${thisDeviceId} has been removed from the rented devices list due to inactivity.`
@@ -230,7 +230,7 @@ function checkListedDevices() {
           const thisDeviceId = tmp[tmp.length - 1];
 
           // Get the devicePublicModel for the current listing.
-          const publicData = await util.getDevicePublicModel(thisDeviceId);
+          const publicData = await util.getDevicePublicModel(config, thisDeviceId);
 
           const checkinTimeStamp = new Date(publicData.checkinTimeStamp);
           const now = new Date();
