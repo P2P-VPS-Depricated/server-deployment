@@ -1,14 +1,14 @@
 /*
   The Listing Manager has the following responsibilities:
 
-  * Poll the OpenBazaar (OB) store for new orders and fulfill those orders when they
-  are detected.
+  * fulfillNewOrders() - Poll the OpenBazaar (OB) store for new orders and
+  fulfill those orders when they are detected.
+
+  * checkRentedDevices() - Monitor Clients that are actively being rented. Reboot
+  them and generate a pro-rated refund if the device loses connection with the server.
 
   * Monitor Clients with listings in the OB store. Reboot them if they lose connection
   with the server, by manipulating the expiration date.
-
-  * Monitor Clients that are actively being rented. Reboot them and generate a pro-rated
-  refund if the device loses connection with the server.
 
   ---WIP---
   * Poll the OB store for purchases of renewal listings and increment the
@@ -142,8 +142,8 @@ async function fulfillNewOrders() {
         `There was an issue with finding the listing on the OpenBazaar server. Skipping.`
       );
     } else {
-      config.logr.error(`Error in listing-manager.js/fulfillNewOrders(): ${err}`);
-      config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+      logr.error(`Error in listing-manager.js/fulfillNewOrders(): ${err}`);
+      logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
     }
   }
 }
@@ -155,69 +155,56 @@ const notificationTimer = setInterval(function() {
 fulfillNewOrders();
 
 // Check all rented devices to ensure their connection is active.
-function checkRentedDevices() {
+async function checkRentedDevices() {
   //debugger;
 
-  // Get a list of rented devices from the server.
-  util
-    .getRentedDevices()
+  try {
+    // Get a list of rented devices from the server.
+    const rentedDevices = await util.getRentedDevices();
 
-    // Loop through each device.
-    .then(async rentedDevices => {
-      //debugger;
+    for (let i = 0; i < rentedDevices.length; i++) {
+      const thisDeviceId = rentedDevices[i];
 
-      for (let i = 0; i < rentedDevices.length; i++) {
-        const thisDeviceId = rentedDevices[i];
+      // Get the devicePublicModel for this device.
+      const publicData = await util.getDevicePublicModel(thisDeviceId);
 
-        // Get the devicePublicModel for this device.
-        const publicData = await util.getDevicePublicModel(thisDeviceId);
+      // Calculate the delay since the client last checked in.
+      const checkinTimeStamp = new Date(publicData.checkinTimeStamp);
+      const now = new Date();
+      const delay = now.getTime() - checkinTimeStamp.getTime();
 
-        const checkinTimeStamp = new Date(publicData.checkinTimeStamp);
-        const now = new Date();
-        const delay = now.getTime() - checkinTimeStamp.getTime();
+      // If device has taken too long to check in.
+      if (delay > MAX_DELAY) {
+        //debugger;
 
-        // If device has taken too long to check in.
-        if (delay > MAX_DELAY) {
-          //debugger;
+        // Set the device expiration to now.
+        await util.updateExpiration(thisDeviceId, 0);
 
-          return (
-            util
-              // Set the device expiration to now.
-              .updateExpiration(thisDeviceId, 0)
+        // Remove the deviceId from the rentedDevices model on the server.
+        await util.removeRentedDevice(thisDeviceId);
 
-              // Remove the deviceId from the rentedDevices model on the server.
-              .then(() => {
-                return util.removeRentedDevice(thisDeviceId);
-              })
-
-              .then(() => {
-                console.log(
-                  `Device ${thisDeviceId} has been removed from the rented devices list due to inactivity.`
-                );
-              })
-          );
-        }
+        logr.log(
+          `Device ${thisDeviceId} has been removed from the rented devices list due to inactivity.`
+        );
       }
+    }
 
-      return true;
-    })
+    return true;
+  } catch (err) {
+    debugger;
+    logr.error(`Error in listing-manager.js/checkRentedDevices(): ${err}`);
 
-    .catch(err => {
-      debugger;
-      console.error("Error running checkRentedDevices(): ");
-
-      if (err.statusCode >= 500)
-        console.error("Connection to the server was refused. Will try again.");
-      else if (err.statusCode === 404) console.error("Server returned 404. Is the server running?");
-      else console.error(JSON.stringify(err, null, 2));
-    });
+    if (err.statusCode >= 500) logr.error("Connection to the server was refused. Will try again.");
+    else if (err.statusCode === 404) logr.error("Server returned 404. Is the server running?");
+    else logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+  }
 }
-//checkRentedDevices(); // Call the function immediately.
+checkRentedDevices(); // Call the function immediately.
 
 // Call checkRentedDevices() every 2 minutees.
-//const checkRentedDevicesTimer = setInterval(function() {
-//  checkRentedDevices();
-//}, CHECK_RENTED_DEVICES_INTERVAL);
+const checkRentedDevicesTimer = setInterval(function() {
+  checkRentedDevices();
+}, CHECK_RENTED_DEVICES_INTERVAL);
 
 // Check all listings in the OB market to ensure their connection is active.
 function checkListedDevices() {

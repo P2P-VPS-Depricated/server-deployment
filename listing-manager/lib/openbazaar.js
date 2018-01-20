@@ -90,6 +90,6 @@ async function fulfillOrder(config, body) {
 module.exports = {
   getOBAuth,
   getNotifications,
-  fulfillOrder,
   markNotificationAsRead,
+  fulfillOrder,
 };
