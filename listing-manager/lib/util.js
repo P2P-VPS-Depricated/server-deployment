@@ -10,6 +10,7 @@
 
 // Dependencies
 const rp = require("request-promise");
+const openbazaar = require("./openbazaar.js");
 
 // This function updates the expiration date of a devices devicePublicData model.
 async function updateExpiration(config, deviceId, timeSelector) {

@@ -364,12 +364,12 @@ function checkRentedDevices() {
       else console.error(JSON.stringify(err, null, 2));
     });
 }
-checkRentedDevices(); // Call the function immediately.
+//checkRentedDevices(); // Call the function immediately.
 
 // Call checkRentedDevices() every 2 minutees.
-const checkRentedDevicesTimer = setInterval(function() {
-  checkRentedDevices();
-}, CHECK_RENTED_DEVICES_INTERVAL);
+//const checkRentedDevicesTimer = setInterval(function() {
+//  checkRentedDevices();
+//}, CHECK_RENTED_DEVICES_INTERVAL);
 
 // Check all listings in the OB market to ensure their connection is active.
 function checkListedDevices() {
@@ -491,9 +491,9 @@ function checkListedDevices() {
       })
   );
 }
-checkListedDevices(); // Call the function immediately.
+//checkListedDevices(); // Call the function immediately.
 
 // Call checkRentedDevices() every 2 minutees.
-const checkListedDevicesTimer = setInterval(function() {
-  checkListedDevices();
-}, CHECK_LISTED_DEVICES_INTERVAL);
+//const checkListedDevicesTimer = setInterval(function() {
+//  checkListedDevices();
+//}, CHECK_LISTED_DEVICES_INTERVAL);
