@@ -31,9 +31,13 @@ const openbazaar = require("./lib/openbazaar.js");
 const app = express();
 const port = 3434;
 
+// Timer intervals.
 const CHECK_OB_NOTIFICATIONS_INTERVAL = 2 * 60000; // 2 minutes
 const CHECK_RENTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
 const CHECK_LISTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
+
+// Amount of time (mS) a device can go without checking in.
+const MAX_DELAY = 60000 * 10; // 10 minutes.
 
 // OpenBazaar Credentials
 const OB_USERNAME = "yourUsername";
@@ -41,7 +45,8 @@ const OB_PASSWORD = "yourPassword";
 
 // Server Information
 const SERVER_URL = "http://p2pvps.net";
-const SERVER_PORT = "4002"; // Open Bazaar port
+const SERVER_PORT = "80";
+const OB_SERVER_PORT = "4002"; // Open Bazaar port
 
 // Create an Express server. Future development will allow serving of webpages and creation of Client API.
 const ExpressServer = require("./lib/express-server.js");
@@ -54,11 +59,12 @@ const logr = new Logger();
 
 // Generate api credentials for OpenBazaar.
 const apiCredentials = openbazaar.getOBAuth(OB_USERNAME, OB_PASSWORD);
-const config = {
+let config = {
   // Config object passed to library functions.
   apiCredentials: apiCredentials,
   server: SERVER_URL,
   port: SERVER_PORT,
+  obPort: OB_SERVER_PORT,
   logr: logr, // Include a handle to the debug logger.
 };
 
@@ -128,6 +134,8 @@ async function fulfillNewOrders() {
     await util.removeOBListing(config, devicePublicModel);
 
     console.log(`OB listing for ${devicePublicModel._id} successfully removed.`);
+
+    resetConfig(); // Reset the config object for next iteration.
   } catch (err) {
     if (err.statusCode >= 500) {
       console.error(
@@ -145,9 +153,6 @@ const notificationTimer = setInterval(function() {
   fulfillNewOrders();
 }, CHECK_OB_NOTIFICATIONS_INTERVAL);
 fulfillNewOrders();
-
-// Amount of time (mS) a device can go without checking in.
-const MAX_DELAY = 60000 * 10; // 10 minutes.
 
 // Check all rented devices to ensure their connection is active.
 function checkRentedDevices() {
@@ -340,3 +345,14 @@ function checkListedDevices() {
 //const checkListedDevicesTimer = setInterval(function() {
 //  checkListedDevices();
 //}, CHECK_LISTED_DEVICES_INTERVAL);
+
+function resetConfig() {
+  config = {
+    // Config object passed to library functions.
+    apiCredentials: apiCredentials,
+    server: SERVER_URL,
+    port: SERVER_PORT,
+    obPort: OB_SERVER_PORT,
+    logr: logr, // Include a handle to the debug logger.
+  };
+}

@@ -10,7 +10,7 @@
   getNotifications - Get notifications
   markNotificationAsRead - Mark a notification as read
   fulfillOrder - Fulfill an order
-  
+
 */
 
 "use strict";
@@ -37,7 +37,7 @@ async function getNotifications(config) {
   try {
     const options = {
       method: "GET",
-      uri: `${config.server}:${config.port}/ob/notifications`,
+      uri: `${config.server}:${config.obPort}/ob/notifications`,
       json: true, // Automatically stringifies the body to JSON
       headers: {
         Authorization: config.apiCredentials,
@@ -55,7 +55,7 @@ async function getNotifications(config) {
 async function markNotificationAsRead(config, body) {
   const options = {
     method: "POST",
-    uri: `${config.server}:${config.port}/ob/marknotificationasread/${body.notificationId}`,
+    uri: `${config.server}:${config.obPort}/ob/marknotificationasread/${body.notificationId}`,
     body: {},
     json: true, // Automatically stringifies the body to JSON
     headers: {
@@ -71,7 +71,7 @@ async function fulfillOrder(config, body) {
   try {
     const options = {
       method: "POST",
-      uri: `${config.server}:${config.port}/ob/orderfulfillment`,
+      uri: `${config.server}:${config.obPort}/ob/orderfulfillment`,
       body: body,
       json: true, // Automatically stringifies the body to JSON
       headers: {
