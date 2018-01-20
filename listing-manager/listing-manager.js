@@ -16,6 +16,8 @@
 
   * Monitor renewal listings and remove any that are unpaid after 1 hr.
 
+  * Remove any orphaned obContract models that have reached their expiration.
+
 */
 
 "use strict";
@@ -23,6 +25,7 @@
 // Dependencies.
 const express = require("express");
 const util = require("./lib/util.js");
+const openbazaar = require("./lib/openbazaar.js");
 
 // Global Variables
 const app = express();
@@ -31,6 +34,14 @@ const port = 3434;
 const CHECK_OB_NOTIFICATIONS_INTERVAL = 2 * 60000; // 2 minutes
 const CHECK_RENTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
 const CHECK_LISTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
+
+// OpenBazaar Credentials
+const OB_USERNAME = "yourUsername";
+const OB_PASSWORD = "yourPassword";
+
+// Server Information
+const SERVER_URL = "http://p2pvps.net";
+const SERVER_PORT = "4002";
 
 // Create an Express server. Future development will allow serving of webpages and creation of Client API.
 const ExpressServer = require("./lib/express-server.js");
@@ -41,7 +52,64 @@ expressServer.start();
 const Logger = require("./lib/logger.js");
 const logr = new Logger();
 
-const apiCredentials = util.getOBAuth();
+// Generate api credentials for OpenBazaar.
+const apiCredentials = openbazaar.getOBAuth(OB_USERNAME, OB_PASSWORD);
+const config = {
+  // Config object passed to library functions.
+  apiCredentials: apiCredentials,
+  server: SERVER_URL,
+  port: SERVER_PORT,
+  logr: logr, // Include a handle to the debug logger.
+};
+
+async function fulfillNewOrders() {
+  try {
+    // Higher scoped variables.
+    let devicePublicData;
+    let thisNotice; // Will not stay here. Just for testing.
+
+    const now = new Date();
+    logr.info(`Listing Manager checking for new orders at ${now}`);
+
+    // Get NEW notifications.
+    const notes = await util.getNewOBNotifications(config);
+
+    // For now, assuming I have one order at a time.
+    thisNotice = notes[0];
+
+    // Exit if no notices were found.
+    if (thisNotice === undefined) return null;
+
+    // Exit if the notice is not for an order.
+    if (thisNotice.notification.type !== "order") return null;
+
+    // Get device ID from the listing
+    const tmp = thisNotice.notification.slug.split("-");
+    const deviceId = tmp[tmp.length - 1];
+
+    // Exit if no device ID was returned.
+    if (deviceId == null) return null;
+
+    // Get devicePublicModel from the server.
+    const devicePublicModel = await util.getDevicePublicModel(deviceId, config);
+
+    // Return the ID for the devicePrivateModel
+    const privateId = devicePublicModel.privateData;
+
+    if (privateData == null) return null;
+
+    // TODO If the order is a renewal, then adjust the code path at this point.
+    // Note, expiration date is auotmatically updated in the next promise.
+
+    config.devicePrivateData = privateData;
+    config.obNotice = thisNotice;
+
+    return util.fulfillOBOrder(config);
+  } catch (err) {
+    config.logr.error(`Error in listing-manager.js/fulfillNewOrders(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+  }
+}
 
 /*
   This function checks for order notications from the OpenBazaar (OB) store.
@@ -62,7 +130,7 @@ function checkNotifications() {
     apiCredentials: apiCredentials,
   };
 
-  // Get new notifications.
+  // Get NEW notifications.
   util
     .getOBNotifications(config)
 
@@ -198,9 +266,11 @@ function checkNotifications() {
 }
 // Call checkNotifications() every 2 minutees.
 const notificationTimer = setInterval(function() {
-  checkNotifications();
+  //checkNotifications();
+  fulfillNewOrders();
 }, CHECK_OB_NOTIFICATIONS_INTERVAL);
-checkNotifications(); // Call right away at startup.
+//checkNotifications(); // Call right away at startup.
+fulfillNewOrders();
 
 // Amount of time (mS) a device can go without checking in.
 const MAX_DELAY = 60000 * 10; // 10 minutes.

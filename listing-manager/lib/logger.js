@@ -1,8 +1,8 @@
 /*
- * Copyright 2017 Chris Troutner & P2PVPS.org
+ * Copyright 2018 Chris Troutner & P2P VPS Inc.
  * Licensing Information: MIT License
  *
- * This library file to handle logging on the Client.
+ * This library file to handle managing logging of debug information.
  */
 
 "use strict";

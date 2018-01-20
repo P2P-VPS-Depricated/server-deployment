@@ -1,31 +1,15 @@
 /*
-  This file contains a collection of 'utility' functions used by the listingManager.
-  By modularizing the code into a series of subfunctions in this file, it makes
-  each subfunciton easier to test. It also makes the code in listingManager easier
-  to read, since you only have to follow the high-level calls.
+  This file contains a collection of low-level 'utility' functions used by the
+  Listing Manager. By modularizing the code into a series of subfunctions in
+  this file, it makes each subfunciton easier to test. It also makes the code
+  in Listing Manager easier to read, since you only have to follow the
+  high-level calls.
 */
 
 "use strict";
 
 // Dependencies
 const rp = require("request-promise");
-
-// Global Variables
-const clientID = "yourUsername";
-const clientSecret = "yourPassword";
-
-// Generate an auth key for the header.Required fall all OpenBazaar API calls.
-function getOBAuth() {
-  //debugger;
-
-  //Encoding as per Centro API Specification.
-  const combinedCredential = `${clientID}:${clientSecret}`;
-  //var base64Credential = window.btoa(combinedCredential);
-  const base64Credential = Buffer.from(combinedCredential).toString("base64");
-  const readyCredential = `Basic ${base64Credential}`;
-
-  return readyCredential;
-}
 
 // This function updates the expiration date of a devices devicePublicData model.
 function updateExpiration(deviceId, timeSelector) {
@@ -110,27 +94,15 @@ function updateExpiration(deviceId, timeSelector) {
 }
 
 // This function gets all the notifications from the OB server.
-// It returns a Promise that resolves to an array of new notifications.
-function getOBNotifications(config) {
-  const options = {
-    method: "GET",
-    uri: "http://p2pvps.net:4002/ob/notifications",
-    //body: listingData,
-    json: true, // Automatically stringifies the body to JSON
-    headers: {
-      Authorization: config.apiCredentials,
-    },
-    //resolveWithFullResponse: true
-  };
+// It returns a Promise that resolves to an array of NEW notifications.
+async function getNewOBNotifications(config) {
+  try {
+    const allNotifications = await openbazaar.getNotifications(config);
 
-  return rp(options).then(function(data) {
-    const allNotifications = data;
     const newNotifications = [];
 
     // Exit if no new notifications.
     if (allNotifications.unread === 0) return newNotifications;
-
-    //debugger;
 
     // Read through all notifications and return any that are marked unread.
     for (let i = 0; i < allNotifications.notifications.length; i++) {
@@ -139,24 +111,32 @@ function getOBNotifications(config) {
     }
 
     return newNotifications;
-  });
+  } catch (err) {
+    config.logr.error(`Error in util.js/getNewOBNotifications(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
 }
 
 // This function returns a devicePublicModel given the deviceId.
-function getDevicePublicModel(deviceId) {
-  const options = {
-    method: "GET",
-    uri: `http://p2pvps.net/api/devicePublicData/${deviceId}`,
-    json: true, // Automatically stringifies the body to JSON
-  };
+async function getDevicePublicModel(deviceId, config) {
+  try {
+    const options = {
+      method: "GET",
+      uri: `${config.server}/api/devicePublicData/${deviceId}`,
+      json: true, // Automatically stringifies the body to JSON
+    };
 
-  return rp(options).then(function(data) {
-    //debugger;
+    const data = await rp(options);
 
     if (data.collection === undefined) throw `No devicePublicModel with ID of ${deviceId}`;
 
     return data.collection;
-  });
+  } catch (err) {
+    config.logr.error(`Error in util.js/getDevicePublicModel(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
 }
 
 // This function returns a devicePrivateModel given ID for the model.
@@ -176,45 +156,37 @@ function getDevicePrivateModel(privateId) {
   });
 }
 
-// This function marks an order on OB as 'Fulfilled'. It send the login information needed
-// by the renter to log into the Client device.
-function fulfillOBOrder(config) {
-  if (config.devicePrivateData == null) return null;
+// This function marks an order on OB as 'Fulfilled'. It sends the login
+// information needed by the renter to log into the Client device.
+async function fulfillOBOrder(config) {
+  try {
+    // Exit if required data is not included.
+    if (config.devicePrivateData == null) return null;
 
-  //debugger;
-
-  const notes = `Host: p2pvps.net
+    // This is the information sent to the purchaser.
+    const notes = `Host: p2pvps.net
 Port: ${config.devicePrivateData.serverSSHPort}
 Login: ${config.devicePrivateData.deviceUserName}
 Password: ${config.devicePrivateData.devicePassword}
 `;
 
-  const bodyData = {
-    orderId: config.obNotice.notification.orderId,
-    note: notes,
-  };
+    // Information needed by OB to fulfill the order.
+    const bodyData = {
+      orderId: config.obNotice.notification.orderId,
+      note: notes,
+    };
 
-  const options = {
-    method: "POST",
-    uri: "http://p2pvps.net:4002/ob/orderfulfillment",
-    body: bodyData,
-    json: true, // Automatically stringifies the body to JSON
-    headers: {
-      Authorization: config.apiCredentials,
-    },
-  };
+    // Fulfill the order.
+    const data = await openbazaar.fulfillOrder(config, bodyData);
 
-  return rp(options)
-    .then(function(data) {
-      //debugger;
-      console.log(`OrderId ${config.obNotice.notification.orderId} has been marked as fulfilled.`);
-      return true;
-    })
-    .catch(err => {
-      debugger;
-      console.log('Error trying to mark order as "Fulfilled".');
-      throw err;
-    });
+    console.log(`OrderId ${config.obNotice.notification.orderId} has been marked as fulfilled.`);
+
+    return true;
+  } catch (err) {
+    config.logr.error(`Error in util.js/fulfillOBOrder(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
 }
 
 // This function adds a deviceId to the rentedDevice list model.
@@ -386,9 +358,8 @@ function getOBListings(config) {
 }
 
 module.exports = {
-  getOBAuth,
   updateExpiration,
-  getOBNotifications,
+  getNewOBNotifications,
   getDevicePublicModel,
   getDevicePrivateModel,
   fulfillOBOrder,

@@ -1,8 +1,8 @@
 /*
- * Copyright 2017 RPiOVN.org
+ * Copyright 2018 Chris Troutner & P2P VPS Inc.
  * Licensing Information: MIT License
  *
- * This library file handle communication with the P2P VPS server.
+ * This library sets up an express server.
  */
 
 "use strict";
