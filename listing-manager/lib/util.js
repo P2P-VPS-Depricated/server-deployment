@@ -4,6 +4,24 @@
   this file, it makes each subfunciton easier to test. It also makes the code
   in Listing Manager easier to read, since you only have to follow the
   high-level calls.
+
+  Functions in this library:
+
+  -Client/Device related functions:
+  getDevicePublicModel - get the devicePublicModel associated with a Client.
+  getDevicePrivateModel - get the devicePrivateModel associated with a Client.
+  updateExpiration - Update the expiration date of a Client.
+  addRentedDevice - Add a Client to the Rented Device list.
+  removeRentedDevice - remove a Client from the Rented Device list.
+  getRentedDevices - Get a list of devices stored in the Rented Device list.
+
+  -OpenBazaar (OB) related functions:
+  getNewOBNotifications - Get new notifications from OpenBazaar.
+  markNotificationAsRead - Mark an OB notification as read.
+  fulfillOBOrder - Mark an OB order as fulfilled.
+  removeOBListing - Remove a listing on OB.
+  getOBListings - Get all the OB listings on the OB store.
+
 */
 
 "use strict";
@@ -11,6 +29,46 @@
 // Dependencies
 const rp = require("request-promise");
 const openbazaar = require("./openbazaar.js");
+
+// This function returns a devicePublicModel given the deviceId.
+async function getDevicePublicModel(deviceId, config) {
+  try {
+    const options = {
+      method: "GET",
+      uri: `${config.server}/api/devicePublicData/${deviceId}`,
+      json: true, // Automatically stringifies the body to JSON
+    };
+
+    const data = await rp(options);
+
+    if (data.collection === undefined) throw `No devicePublicModel with ID of ${deviceId}`;
+
+    return data.collection;
+  } catch (err) {
+    config.logr.error(`Error in util.js/getDevicePublicModel(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
+}
+
+// This function returns a devicePrivateModel given ID for the model.
+async function getDevicePrivateModel(config, privateId) {
+  try {
+    const options = {
+      method: "GET",
+      uri: `${config.server}/api/devicePrivateData/${privateId}`,
+      json: true, // Automatically stringifies the body to JSON
+    };
+
+    const data = await rp(options);
+
+    return data.collection;
+  } catch (err) {
+    config.logr.error(`Error in util.js/getDevicePrivateModel(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
+}
 
 // This function updates the expiration date of a devices devicePublicData model.
 async function updateExpiration(config, deviceId, timeSelector) {
@@ -77,104 +135,6 @@ async function updateExpiration(config, deviceId, timeSelector) {
   }
 }
 
-// This function gets all the notifications from the OB server.
-// It returns a Promise that resolves to an array of NEW notifications.
-async function getNewOBNotifications(config) {
-  try {
-    const allNotifications = await openbazaar.getNotifications(config);
-
-    const newNotifications = [];
-
-    // Exit if no new notifications.
-    if (allNotifications.unread === 0) return newNotifications;
-
-    // Read through all notifications and return any that are marked unread.
-    for (let i = 0; i < allNotifications.notifications.length; i++) {
-      if (!allNotifications.notifications[i].read)
-        newNotifications.push(allNotifications.notifications[i]);
-    }
-
-    return newNotifications;
-  } catch (err) {
-    config.logr.error(`Error in util.js/getNewOBNotifications(): ${err}`);
-    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
-    throw err;
-  }
-}
-
-// This function returns a devicePublicModel given the deviceId.
-async function getDevicePublicModel(deviceId, config) {
-  try {
-    const options = {
-      method: "GET",
-      uri: `${config.server}/api/devicePublicData/${deviceId}`,
-      json: true, // Automatically stringifies the body to JSON
-    };
-
-    const data = await rp(options);
-
-    if (data.collection === undefined) throw `No devicePublicModel with ID of ${deviceId}`;
-
-    return data.collection;
-  } catch (err) {
-    config.logr.error(`Error in util.js/getDevicePublicModel(): ${err}`);
-    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
-    throw err;
-  }
-}
-
-// This function returns a devicePrivateModel given ID for the model.
-async function getDevicePrivateModel(config, privateId) {
-  try {
-    const options = {
-      method: "GET",
-      uri: `${config.server}/api/devicePrivateData/${privateId}`,
-      json: true, // Automatically stringifies the body to JSON
-    };
-
-    const data = await rp(options);
-
-    return data.collection;
-  } catch (err) {
-    config.logr.error(`Error in util.js/getDevicePrivateModel(): ${err}`);
-    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
-    throw err;
-  }
-}
-
-// This function marks an order on OB as 'Fulfilled'. It sends the login
-// information needed by the renter to log into the Client device.
-async function fulfillOBOrder(config) {
-  try {
-    // Exit if required data is not included.
-    if (config.devicePrivateData == null) return null;
-
-    // This is the information sent to the purchaser.
-    const notes = `Host: p2pvps.net
-Port: ${config.devicePrivateData.serverSSHPort}
-Login: ${config.devicePrivateData.deviceUserName}
-Password: ${config.devicePrivateData.devicePassword}
-`;
-
-    // Information needed by OB to fulfill the order.
-    const bodyData = {
-      orderId: config.obNotice.notification.orderId,
-      note: notes,
-    };
-
-    // Fulfill the order.
-    await openbazaar.fulfillOrder(config, bodyData);
-
-    console.log(`OrderId ${config.obNotice.notification.orderId} has been marked as fulfilled.`);
-
-    return true;
-  } catch (err) {
-    config.logr.error(`Error in util.js/fulfillOBOrder(): ${err}`);
-    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
-    throw err;
-  }
-}
-
 // This function adds a deviceId to the rentedDevice list model.
 async function addRentedDevice(config, deviceId) {
   //debugger;
@@ -222,6 +182,58 @@ function removeRentedDevice(deviceId) {
     });
 }
 
+// This function returns an array of devicePublicModel IDs stored in the rentedDevices model.
+function getRentedDevices() {
+  //debugger;
+
+  const options = {
+    method: "GET",
+    uri: `http://p2pvps.net/api/rentedDevices/list`,
+    json: true, // Automatically stringifies the body to JSON
+  };
+
+  return rp(options)
+    .then(function(data) {
+      //debugger;
+
+      if (!data.collection[0]) throw `Could not find a list of rented devices on server.`;
+
+      const retVal = data.collection[0].rentedDevices;
+
+      return retVal;
+    })
+    .catch(err => {
+      debugger;
+      console.error(`Could not retrieve the list of rented devices from the server.`);
+      throw err;
+    });
+}
+
+// This function gets all the notifications from the OB server.
+// It returns a Promise that resolves to an array of NEW notifications.
+async function getNewOBNotifications(config) {
+  try {
+    const allNotifications = await openbazaar.getNotifications(config);
+
+    const newNotifications = [];
+
+    // Exit if no new notifications.
+    if (allNotifications.unread === 0) return newNotifications;
+
+    // Read through all notifications and return any that are marked unread.
+    for (let i = 0; i < allNotifications.notifications.length; i++) {
+      if (!allNotifications.notifications[i].read)
+        newNotifications.push(allNotifications.notifications[i]);
+    }
+
+    return newNotifications;
+  } catch (err) {
+    config.logr.error(`Error in util.js/getNewOBNotifications(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
+}
+
 // This function marks a notification as read in Open Bazaar.
 async function markNotificationAsRead(config) {
   try {
@@ -241,6 +253,39 @@ async function markNotificationAsRead(config) {
     config.logr.error(`Error in util.js/markNotificationAsRead(): ${err}`);
     config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
     config.logr.error(`openbazaar returned: ${data}`);
+    throw err;
+  }
+}
+
+// This function marks an order on OB as 'Fulfilled'. It sends the login
+// information needed by the renter to log into the Client device.
+async function fulfillOBOrder(config) {
+  try {
+    // Exit if required data is not included.
+    if (config.devicePrivateData == null) return null;
+
+    // This is the information sent to the purchaser.
+    const notes = `Host: p2pvps.net
+Port: ${config.devicePrivateData.serverSSHPort}
+Login: ${config.devicePrivateData.deviceUserName}
+Password: ${config.devicePrivateData.devicePassword}
+`;
+
+    // Information needed by OB to fulfill the order.
+    const bodyData = {
+      orderId: config.obNotice.notification.orderId,
+      note: notes,
+    };
+
+    // Fulfill the order.
+    await openbazaar.fulfillOrder(config, bodyData);
+
+    console.log(`OrderId ${config.obNotice.notification.orderId} has been marked as fulfilled.`);
+
+    return true;
+  } catch (err) {
+    config.logr.error(`Error in util.js/fulfillOBOrder(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
     throw err;
   }
 }
@@ -276,33 +321,6 @@ async function removeOBListing(config, deviceData) {
   }
 }
 
-// This function returns an array of devicePublicModel IDs stored in the rentedDevices model.
-function getRentedDevices() {
-  //debugger;
-
-  const options = {
-    method: "GET",
-    uri: `http://p2pvps.net/api/rentedDevices/list`,
-    json: true, // Automatically stringifies the body to JSON
-  };
-
-  return rp(options)
-    .then(function(data) {
-      //debugger;
-
-      if (!data.collection[0]) throw `Could not find a list of rented devices on server.`;
-
-      const retVal = data.collection[0].rentedDevices;
-
-      return retVal;
-    })
-    .catch(err => {
-      debugger;
-      console.error(`Could not retrieve the list of rented devices from the server.`);
-      throw err;
-    });
-}
-
 // This function returns an array of listings in the store associated with this server.
 function getOBListings(config) {
   //debugger;
@@ -330,15 +348,15 @@ function getOBListings(config) {
 }
 
 module.exports = {
-  updateExpiration,
-  getNewOBNotifications,
   getDevicePublicModel,
   getDevicePrivateModel,
-  fulfillOBOrder,
+  updateExpiration,
   addRentedDevice,
   removeRentedDevice,
-  markNotificationAsRead,
-  removeOBListing,
   getRentedDevices,
+  getNewOBNotifications,
+  markNotificationAsRead,
+  fulfillOBOrder,
+  removeOBListing,
   getOBListings,
 };
