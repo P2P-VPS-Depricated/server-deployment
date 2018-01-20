@@ -64,10 +64,6 @@ const config = {
 
 async function fulfillNewOrders() {
   try {
-    // Higher scoped variables.
-    let devicePublicData;
-    let thisNotice; // Will not stay here. Just for testing.
-
     const now = new Date();
     logr.info(`Listing Manager checking for new orders at ${now}`);
 
@@ -75,20 +71,24 @@ async function fulfillNewOrders() {
     const notes = await util.getNewOBNotifications(config);
 
     // For now, assuming I have one order at a time.
-    thisNotice = notes[0];
+    const thisNotice = notes[0];
 
     // Exit if no notices were found.
     if (thisNotice === undefined) return null;
 
     // Exit if the notice is not for an order.
-    if (thisNotice.notification.type !== "order") return null;
+    if (thisNotice.notification.type !== "order") {
+      logr.debug("Notification returned was not an order. Exiting.");
+      return null;
+    }
 
     // Get device ID from the listing
     const tmp = thisNotice.notification.slug.split("-");
     const deviceId = tmp[tmp.length - 1];
 
     // Exit if no device ID was returned.
-    if (deviceId == null) return null;
+    //if (deviceId == null) return null;
+    // TODO need some better validation here to detect if a valid GUID was returned.
 
     // Get devicePublicModel from the server.
     const devicePublicModel = await util.getDevicePublicModel(deviceId, config);
@@ -97,14 +97,15 @@ async function fulfillNewOrders() {
     const privateId = devicePublicModel.privateData;
 
     // Get the devicePrivateModel
-    const privateData = await util.getDevicePrivateModel(config, privateId);
+    const devicePrivateModel = await util.getDevicePrivateModel(config, privateId);
 
-    if (privateData == null) return null;
+    // TODO need better validation. Should roll that into the util.getDevicePrivateModel().
+    if (devicePrivateModel == null) return null;
 
     // TODO If the order is a renewal, then adjust the code path at this point.
     // Note, expiration date is auotmatically updated in the next promise.
 
-    config.devicePrivateData = privateData;
+    config.devicePrivateData = devicePrivateModel;
     config.obNotice = thisNotice;
 
     // Mark the order as fulfilled.
@@ -117,22 +118,16 @@ async function fulfillNewOrders() {
     // Mark notification as read.
     await util.markNotificationAsRead(config);
 
-    if (devicePublicData === undefined) return null;
-
     // Update the expiration date.
-    await util.updateExpiration(config, devicePublicData._id, 10);
-
-    if (devicePublicData === undefined) return null;
+    await util.updateExpiration(config, devicePublicModel._id, 10);
 
     // Add the device to the Rented Devices list.
-    await util.addRentedDevice(config, devicePublicData._id);
-
-    if (devicePublicData === undefined) return null;
+    await util.addRentedDevice(config, devicePublicModel._id);
 
     // Remove the listing from the OB store.
-    await util.removeOBListing(config, devicePublicData);
+    await util.removeOBListing(config, devicePublicModel);
 
-    console.log(`OB listing for ${devicePublicData._id} successfully removed.`);
+    console.log(`OB listing for ${devicePublicModel._id} successfully removed.`);
   } catch (err) {
     if (err.statusCode >= 500) {
       console.error(
