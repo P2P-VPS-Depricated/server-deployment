@@ -96,6 +96,9 @@ async function fulfillNewOrders() {
     // Return the ID for the devicePrivateModel
     const privateId = devicePublicModel.privateData;
 
+    // Get the devicePrivateModel
+    const privateData = await util.getDevicePrivateModel(config, privateId);
+
     if (privateData == null) return null;
 
     // TODO If the order is a renewal, then adjust the code path at this point.

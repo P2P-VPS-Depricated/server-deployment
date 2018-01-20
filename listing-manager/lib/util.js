@@ -124,20 +124,22 @@ async function getDevicePublicModel(deviceId, config) {
 }
 
 // This function returns a devicePrivateModel given ID for the model.
-function getDevicePrivateModel(privateId) {
-  const options = {
-    method: "GET",
-    uri: `http://p2pvps.net/api/devicePrivateData/${privateId}`,
-    json: true, // Automatically stringifies the body to JSON
-  };
+async function getDevicePrivateModel(config, privateId) {
+  try {
+    const options = {
+      method: "GET",
+      uri: `${config.server}/api/devicePrivateData/${privateId}`,
+      json: true, // Automatically stringifies the body to JSON
+    };
 
-  return rp(options).then(function(data) {
-    //debugger;
-
-    if (data.collection === undefined) throw `No devicePrivateModel with ID of ${privateId}`;
+    const data = await rp(options);
 
     return data.collection;
-  });
+  } catch (err) {
+    config.logr.error(`Error in util.js/getDevicePrivateModel(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
 }
 
 // This function marks an order on OB as 'Fulfilled'. It sends the login
