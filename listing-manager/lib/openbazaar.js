@@ -10,6 +10,7 @@
   getNotifications - Get notifications
   markNotificationAsRead - Mark a notification as read
   fulfillOrder - Fulfill an order
+  getListings - Get all product listings in the OB store.
 
 */
 
@@ -87,9 +88,32 @@ async function fulfillOrder(config, body) {
   }
 }
 
+// Returns a promise that resolves into an array of store listings.
+async function getListings(config) {
+  //debugger;
+
+  try {
+    const options = {
+      method: "GET",
+      uri: `${config.server}:${config.obPort}/ob/listings`,
+      json: true, // Automatically stringifies the body to JSON
+      headers: {
+        Authorization: config.apiCredentials,
+      },
+    };
+
+    return rp(options);
+  } catch (err) {
+    config.logr.error(`Error in openbazaar.js/getListings(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
+}
+
 module.exports = {
   getOBAuth,
   getNotifications,
   markNotificationAsRead,
   fulfillOrder,
+  getListings,
 };

@@ -20,7 +20,6 @@
   markNotificationAsRead - Mark an OB notification as read.
   fulfillOBOrder - Mark an OB order as fulfilled.
   removeOBListing - Remove a listing on OB.
-  getOBListings - Get all the OB listings on the OB store.
 
 */
 
@@ -321,32 +320,6 @@ async function removeOBListing(config, deviceData) {
   }
 }
 
-// This function returns an array of listings in the store associated with this server.
-function getOBListings(config) {
-  //debugger;
-
-  const options = {
-    method: "GET",
-    uri: `http://p2pvps.net:4002/ob/listings`,
-    json: true, // Automatically stringifies the body to JSON
-    headers: {
-      Authorization: config.apiCredentials,
-    },
-  };
-
-  return rp(options)
-    .then(function(data) {
-      //debugger;
-      //console.log(`Notification ${noteId} has been marked as 'read'.`);
-      return data;
-    })
-    .catch(err => {
-      debugger;
-      console.log("Error trying to get store listings.");
-      throw err;
-    });
-}
-
 module.exports = {
   getDevicePublicModel,
   getDevicePrivateModel,
@@ -358,5 +331,4 @@ module.exports = {
   markNotificationAsRead,
   fulfillOBOrder,
   removeOBListing,
-  getOBListings,
 };

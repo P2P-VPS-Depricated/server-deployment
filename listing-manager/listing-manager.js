@@ -215,9 +215,9 @@ function checkListedDevices() {
   };
 
   return (
-    util
+    openbazaar
       // Get all the listing on this OpenBazaar store.
-      .getOBListings(config)
+      .getListings(config)
 
       // Loop through each device.
       .then(async listings => {
