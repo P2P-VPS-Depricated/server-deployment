@@ -269,6 +269,8 @@ async function checkListedDevices() {
 
     if (err.statusCode >= 500) logr.error("Connection to the server was refused. Will try again.");
     else if (err.statusCode === 404) logr.error("Server returned 404. Is the server running?");
+    else if (err.name === "RequestError")
+      logr.error("Server connection was reset. Will try again.");
     else logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
   }
 }
