@@ -132,7 +132,7 @@ async function fulfillNewOrders() {
     await util.markNotificationAsRead(config);
 
     // Update the expiration date.
-    await util.updateExpiration(config, devicePublicModel._id, 10);
+    await util.updateExpiration(config, devicePublicModel._id, 20);
 
     // Add the device to the Rented Devices list.
     await util.addRentedDevice(config, devicePublicModel._id);
