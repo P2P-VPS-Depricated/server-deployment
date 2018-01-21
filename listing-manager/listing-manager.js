@@ -7,8 +7,9 @@
   * checkRentedDevices() - Monitor Clients that are actively being rented. Reboot
   them and generate a pro-rated refund if the device loses connection with the server.
 
-  * Monitor Clients with listings in the OB store. Reboot them if they lose connection
-  with the server, by manipulating the expiration date.
+  * checkListedDevices() - Monitor Clients with listings in the OB store.
+  Reboot them if they lose connection with the server, by manipulating the
+  expiration date.
 
   ---WIP---
   * Poll the OB store for purchases of renewal listings and increment the
@@ -25,7 +26,8 @@
 // Dependencies.
 const express = require("express");
 const util = require("./lib/util.js");
-const openbazaar = require("./lib/openbazaar.js");
+//const openbazaar = require("./lib/openbazaar.js");
+const openbazaar = require("openbazaar-node");
 
 // Global Variables
 const app = express();
@@ -133,7 +135,7 @@ async function fulfillNewOrders() {
     // Add the device to the Rented Devices list.
     await util.addRentedDevice(config, devicePublicModel._id);
 
-    // Remove the listing from the OB store.
+    // Remove the listing from the OB store and the obContract model from the server.
     await util.removeOBListing(config, devicePublicModel);
 
     console.log(`OB listing for ${devicePublicModel._id} successfully removed.`);
