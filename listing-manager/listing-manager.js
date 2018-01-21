@@ -223,6 +223,7 @@ async function checkListedDevices() {
       const thisSlug = listings[i].slug;
       const tmp = thisSlug.split("-");
       const thisDeviceId = tmp[tmp.length - 1];
+      logr.debug(`checkListedDevices() reviewing this deviceId: ${thisDeviceId}`);
 
       // Get the devicePublicModel for the current listing.
       const publicData = await util.getDevicePublicModel(config, thisDeviceId);
