@@ -260,6 +260,10 @@ async function checkListedDevices() {
 
         logr.log(`OB listing for ${thisDeviceId} has been removed due to expiration date reached.`);
       }
+
+      // If the store listing experation has been reached, remove the listing.
+      const thisListing = listings[i];
+      logr.debug(`thisListing = ${JSON.stringify(thisListing, null, 2)}`);
     }
 
     return true;
