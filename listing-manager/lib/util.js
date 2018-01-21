@@ -27,7 +27,7 @@
 
 // Dependencies
 const rp = require("request-promise");
-const openbazaar = require("./openbazaar.js");
+const openbazaar = require("openbazaar-node");
 
 // This function returns a devicePublicModel given the deviceId.
 async function getDevicePublicModel(config, deviceId) {
