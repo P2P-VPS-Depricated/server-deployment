@@ -73,6 +73,8 @@ let config = {
   logr: logr, // Include a handle to the debug logger.
 };
 
+// Poll the OpenBazaar (OB) store for new orders and fulfill those orders when
+// they are detected.
 async function fulfillNewOrders() {
   try {
     const now = new Date();
