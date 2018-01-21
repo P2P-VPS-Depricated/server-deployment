@@ -45,7 +45,10 @@ async function getDevicePublicModel(config, deviceId) {
     return data.collection;
   } catch (err) {
     config.logr.error(`Error in util.js/getDevicePublicModel(): ${err}`);
-    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+
+    if (err.statusCode >= 500)
+      config.logr.error("Connection to the server was refused. Will try again.");
+    else config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
     throw err;
   }
 }
