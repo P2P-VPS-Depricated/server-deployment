@@ -206,7 +206,7 @@ async function getRentedDevices(config) {
   } catch (err) {
     config.logr.error(`Error in util.js/getRentedDevices(): ${err}`);
     config.logr.error(`Could not retrieve the list of rented devices from the server.`);
-    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    //config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
     throw err;
   }
 }
