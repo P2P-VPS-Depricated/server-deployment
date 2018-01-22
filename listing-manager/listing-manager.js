@@ -264,7 +264,14 @@ async function checkListedDevices() {
       // If the store listing experation has been reached, remove the listing.
       const obContractId = publicData.obContract;
       const obContractModel = await util.getObContractModel(config, obContractId);
-      logr.debug(`obContractModel: ${JSON.stringify(obContractModel, null, 2)}`);
+      //logr.debug(`obContractModel: ${JSON.stringify(obContractModel, null, 2)}`);
+      const experation = new Date(obContractModel.experation);
+      if (now.getTime > experation.getTime) {
+        // Remove the listing from the OB store.
+        await util.removeOBListing(config, publicData);
+
+        logr.log(`OB listing for ${thisDeviceId} has been removed due to expiration date reached.`);
+      }
     }
 
     return true;
