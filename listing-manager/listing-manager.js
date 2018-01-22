@@ -263,7 +263,7 @@ async function checkListedDevices() {
 
       // If the store listing experation has been reached, remove the listing.
       const obContractId = publicData.obContract;
-      const obContractModel = util.getObContractModel(obContractId);
+      const obContractModel = await util.getObContractModel(obContractId);
       logr.debug(`obContractModel: ${JSON.stringify(obContractModel, null, 2)}`);
     }
 
