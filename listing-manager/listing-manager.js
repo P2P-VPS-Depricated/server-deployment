@@ -266,7 +266,7 @@ async function checkListedDevices() {
       const obContractModel = await util.getObContractModel(config, obContractId);
       //logr.debug(`obContractModel: ${JSON.stringify(obContractModel, null, 2)}`);
       const experation = new Date(obContractModel.experation);
-      if (now.getTime > experation.getTime) {
+      if (now.getTime() > experation.getTime()) {
         // Remove the listing from the OB store.
         await util.removeOBListing(config, publicData);
 
