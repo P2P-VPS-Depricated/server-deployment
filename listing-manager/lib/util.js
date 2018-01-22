@@ -20,6 +20,7 @@
   markNotificationAsRead - Mark an OB notification as read.
   fulfillOBOrder - Mark an OB order as fulfilled.
   removeOBListing - Remove a listing on OB.
+  getObContractModel - Get an obContract model for the device.
 
 */
 
@@ -325,6 +326,30 @@ async function removeOBListing(config, deviceData) {
   }
 }
 
+// This function returns a devicePublicModel given the deviceId.
+async function getObContractModel(config, deviceId) {
+  try {
+    const options = {
+      method: "GET",
+      uri: `${config.server}:${config.port}/api/obContract/${deviceId}`,
+      json: true, // Automatically stringifies the body to JSON
+    };
+
+    const data = await rp(options);
+
+    if (data.collection === undefined) throw `No obContract Model with ID of ${deviceId}`;
+
+    return data.collection;
+  } catch (err) {
+    config.logr.error(`Error in util.js/getObContractModel(): ${err}`);
+
+    if (err.statusCode >= 500)
+      config.logr.error("Connection to the server was refused. Will try again.");
+    else config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
+}
+
 module.exports = {
   getDevicePublicModel,
   getDevicePrivateModel,
@@ -336,4 +361,5 @@ module.exports = {
   markNotificationAsRead,
   fulfillOBOrder,
   removeOBListing,
+  getObContractModel,
 };
