@@ -47,9 +47,16 @@ async function getDevicePublicModel(config, deviceId) {
   } catch (err) {
     config.logr.error(`Error in util.js/getDevicePublicModel(): ${err}`);
 
-    if (err.statusCode >= 500)
-      config.logr.error("Connection to the server was refused. Will try again.");
-    else config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    if (err.statusCode >= 500) {
+      if (err.error === "database error") {
+        config.logr.error(`Database error. GUID ${deviceId} could not be found.`);
+        throw "database error";
+      } else {
+        config.logr.error("Connection to the server was refused. Will try again.");
+      }
+    } else {
+      config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    }
     throw err;
   }
 }
