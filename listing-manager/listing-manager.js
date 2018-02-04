@@ -228,7 +228,7 @@ async function checkListedDevices() {
       logr.debug(`checkListedDevices() reviewing this deviceId: ${thisDeviceId}`);
 
       const isValid = util.validateGuid(thisDeviceId);
-      logr.debug(`GUID validator function returned ${isValid}`);
+      //logr.debug(`GUID validator function returned ${isValid}`);
       if (!isValid) continue;
 
       // Get the devicePublicModel for the current listing.
