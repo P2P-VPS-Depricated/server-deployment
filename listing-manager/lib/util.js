@@ -357,7 +357,6 @@ async function getObContractModel(config, deviceId) {
       );
       return false;
     }
-
     config.logr.error(`Error in util.js/getObContractModel(): ${err}`);
     config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
     throw err;
