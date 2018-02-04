@@ -283,7 +283,7 @@ async function checkListedDevices() {
     debugger;
     if (err === "not GUID") {
       logr.info("Listing is not a VPS. Skipping.");
-      throw "not GUID";
+      return;
     }
 
     logr.error(`Error in listing-manager.js/checkListedDevices(): ${err}`);
