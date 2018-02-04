@@ -334,6 +334,7 @@ async function removeOBListing(config, deviceData) {
 }
 
 // This function returns a devicePublicModel given the deviceId.
+// If the device can not be found, it returns false.
 async function getObContractModel(config, deviceId) {
   try {
     const options = {
@@ -348,12 +349,17 @@ async function getObContractModel(config, deviceId) {
 
     return data.collection;
   } catch (err) {
-    config.logr.error(`Error in util.js/getObContractModel(): ${err}`);
+
 
     if (err.statusCode >= 500)
       config.logr.error("Connection to the server was refused. Will try again.");
-    else config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
-    throw err;
+      return false;
+    else {
+      config.logr.error(`Error in util.js/getObContractModel(): ${err}`);
+      config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+      throw err;
+    }
+
   }
 }
 
