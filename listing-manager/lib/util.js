@@ -352,10 +352,13 @@ async function getObContractModel(config, deviceId) {
     return data.collection;
   } catch (err) {
     if (err.statusCode >= 500) {
-      config.logr.error(
-        "util.js/getObContractModel(): Connection to the server was refused. Will try again."
-      );
-      config.logr.error(`error stringified: ${JSON.stringify(err, null, 2)}`);
+      if (err.error.error === "not found") {
+        config.logr.error(`util.js/getObContractModel(): obContractModel not found.`);
+      } else {
+        config.logr.error(
+          "util.js/getObContractModel(): Connection to the server was refused. Will try again."
+        );
+      }
       return false;
     }
     config.logr.error(`Error in util.js/getObContractModel(): ${err}`);
