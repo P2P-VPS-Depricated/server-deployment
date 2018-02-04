@@ -201,9 +201,15 @@ async function checkRentedDevices() {
     debugger;
     logr.error(`Error in listing-manager.js/checkRentedDevices(): ${err}`);
 
-    if (err.statusCode >= 500) logr.error("Connection to the server was refused. Will try again.");
-    else if (err.statusCode === 404) logr.error("Server returned 404. Is the server running?");
-    else logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    if (err.statusCode >= 500) {
+      logr.error(
+        "listing-manager.js/checkRentedDevices(): Connection to the server was refused. Will try again."
+      );
+    } else if (err.statusCode === 404) {
+      logr.error("Server returned 404. Is the server running?");
+    } else {
+      logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    }
   }
 }
 checkRentedDevices(); // Call the function immediately.
@@ -239,7 +245,7 @@ async function checkListedDevices() {
       const now = new Date();
       const delay = now.getTime() - checkinTimeStamp.getTime();
 
-      // If device has taken too long to check in.
+      // If device has taken too long to check in, remove the listing.
       if (delay > MAX_DELAY) {
         debugger;
 
@@ -289,12 +295,19 @@ async function checkListedDevices() {
 
     logr.error(`Error in listing-manager.js/checkListedDevices(): ${err}`);
 
-    if (err.statusCode >= 500) logr.error("Connection to the server was refused. Will try again.");
-    else if (err.statusCode === 404) logr.error("Server returned 404. Is the server running?");
-    else if (err.name === "RequestError")
+    if (err.statusCode >= 500) {
+      logr.error(
+        "listing-manager.js/checkListedDevices(): Connection to the server was refused. Will try again."
+      );
+    } else if (err.statusCode === 404) {
+      logr.error("Server returned 404. Is the server running?");
+    } else if (err.name === "RequestError") {
       logr.error("Server connection was reset. Will try again.");
-    else if (err === "database error") logr.error("Database error. Skipping.");
-    else logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    } else if (err === "database error") {
+      logr.error("Database error. Skipping.");
+    } else {
+      logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    }
   }
 }
 checkListedDevices(); // Call the function immediately.
