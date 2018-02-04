@@ -352,6 +352,7 @@ async function getObContractModel(config, deviceId) {
     return data.collection;
   } catch (err) {
     if (err.statusCode >= 500) {
+      // Model could not be found. (probably already deleted)
       if (err.error.error === "not found") {
         config.logr.error(`util.js/getObContractModel(): obContractModel not found.`);
       } else {
