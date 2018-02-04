@@ -355,6 +355,7 @@ async function getObContractModel(config, deviceId) {
       config.logr.error(
         "util.js/getObContractModel(): Connection to the server was refused. Will try again."
       );
+      config.logr.error(`error stringified: ${JSON.stringify(err, null, 2)}`);
       return false;
     }
     config.logr.error(`Error in util.js/getObContractModel(): ${err}`);
