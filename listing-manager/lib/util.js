@@ -52,7 +52,9 @@ async function getDevicePublicModel(config, deviceId) {
         config.logr.error(`Database error. GUID ${deviceId} could not be found.`);
         throw "database error";
       } else {
-        config.logr.error("Connection to the server was refused. Will try again.");
+        config.logr.error(
+          "util.js/getDevicePublicModel(): Connection to the server was refused. Will try again."
+        );
       }
     } else {
       config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
@@ -350,7 +352,9 @@ async function getObContractModel(config, deviceId) {
     return data.collection;
   } catch (err) {
     if (err.statusCode >= 500) {
-      config.logr.error("Connection to the server was refused. Will try again.");
+      config.logr.error(
+        "util.js/getObContractModel(): Connection to the server was refused. Will try again."
+      );
       return false;
     }
 
