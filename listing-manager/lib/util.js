@@ -357,6 +357,16 @@ async function getObContractModel(config, deviceId) {
   }
 }
 
+// This function returns true or false, depending on if the input string matches
+// a regular expression or a valid GUID.
+function validateGuid(guid) {
+  if (typeof guid !== "string") return false; // Error handling.
+
+  const re = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  return re.test(guid);
+}
+
 module.exports = {
   getDevicePublicModel,
   getDevicePrivateModel,
@@ -369,4 +379,5 @@ module.exports = {
   fulfillOBOrder,
   removeOBListing,
   getObContractModel,
+  validateGuid,
 };
