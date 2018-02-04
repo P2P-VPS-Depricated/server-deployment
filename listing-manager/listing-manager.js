@@ -229,7 +229,7 @@ async function checkListedDevices() {
 
       const isValid = util.validateGuid(thisDeviceId);
       logr.debug(`GUID validator function returned ${isValid}`);
-      if (!isValid) throw "not GUID";
+      if (!isValid) continue;
 
       // Get the devicePublicModel for the current listing.
       const publicData = await util.getDevicePublicModel(config, thisDeviceId);
@@ -281,10 +281,6 @@ async function checkListedDevices() {
     return true;
   } catch (err) {
     debugger;
-    if (err === "not GUID") {
-      logr.info("Listing is not a VPS. Skipping.");
-      return;
-    }
 
     logr.error(`Error in listing-manager.js/checkListedDevices(): ${err}`);
 
