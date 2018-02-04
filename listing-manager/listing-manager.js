@@ -281,13 +281,17 @@ async function checkListedDevices() {
     return true;
   } catch (err) {
     debugger;
+    if (err === "not GUID") {
+      logr.info("Listing is not a VPS. Skipping.");
+      throw "not GUID";
+    }
+
     logr.error(`Error in listing-manager.js/checkListedDevices(): ${err}`);
 
     if (err.statusCode >= 500) logr.error("Connection to the server was refused. Will try again.");
     else if (err.statusCode === 404) logr.error("Server returned 404. Is the server running?");
     else if (err.name === "RequestError")
       logr.error("Server connection was reset. Will try again.");
-    else if (err === "not GUID") logr.info("Listing is not a VPS. Skipping.");
     else if (err === "database error") logr.error("Database error. Skipping.");
     else logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
   }
