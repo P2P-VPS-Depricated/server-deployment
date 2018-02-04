@@ -362,7 +362,7 @@ async function getObContractModel(config, deviceId) {
 function validateGuid(guid) {
   if (typeof guid !== "string") return false; // Error handling.
 
-  const re = /^[0-9a-f]{8}[0-9a-f]{4}[1-5][0-9a-f]{3}[89ab][0-9a-f]{3}[0-9a-f]{12}$/i;
+  const re = /^[a-f\d]{24}$/i;
 
   return re.test(guid);
 }
