@@ -1,14 +1,14 @@
 #Copyright 2017 RPiOVN.org
-#Licensing Information: http://rpiovn.org/license 
+#Licensing Information: http://rpiovn.org/license
 
 #Create a minimal Ubuntu shell running SSHD.
 #Adapted from this tutorial: https://docs.docker.com/engine/examples/running_ssh_service/#build-an-eg_sshd-image
 
-FROM ubuntu:17.04
+FROM ubuntu:16.04
 MAINTAINER Chris Troutner <chris.troutner@gmail.com>
 
 #Install dependant packages
-RUN apt-get update 
+RUN apt-get update
 RUN apt-get install -y openssh-server
 #RUN apt-get install -y sudo
 
@@ -61,4 +61,3 @@ COPY sshd_config /etc/ssh/sshd_config
 #CMD ["/usr/sbin/sshd", "-D", "-p", "4100"]
 
 ENTRYPOINT ["./finalsetup", "node", "dummyapp.js"]
-

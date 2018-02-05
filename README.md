@@ -9,27 +9,29 @@ stack can be illustrated as below, and you can read all the details in [the spec
 
 Note: This repository was originally forked from the [docker-connextcms](https://github.com/christroutner/docker-connextcms) parent repository.
 It upgrades the ConnextCMS docker container to use v8 of node.js.
+The software in this repo has been heavily customized and is quite different from
+the original repo.
 
 
 ## Installation (Rough Draft)
 It's assumed that you are starting with a fresh installation of Ubuntu 16.04 LTS on a 64-bit machine.
 It's also assumed that you are installing as a [non-root user with sudo privileges](https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-16-04).
 
-1. Install Docker on the host system. [This tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04)
+1. Install Docker on the host system. Steps 1 and 2 in [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04)
 shows how to install Docker on a Ubuntu 16.04 system. It's specifically targeted to Digital Ocean's cloud servers, but
-should work for any Ubuntnu system.
+should work for any Ubuntu system.
 Use [this link](https://m.do.co/c/8f47a23b91ce) to sign up for a Digital Ocean account and get a $10 credit, capable of
 running a $5 server for two months.
 
-2. Install Docker Compose too. [This tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04)
-shows how to do so on a Ubuntu system.
+2. Install Docker Compose too, following Step 1 of [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04).
+Again, it focuses on a Ubuntu system.
 
 3. Clone this repository in your home directory with the following command:
-`git clone https://github.com/RPiOVN/server-deployment`
+`git clone https://github.com/P2PVPS/server-deployment`
 
 * Enter the new `server-deployment` directory, then initialize the repository by running `./init`.
 
-4.  Enter the `openBazaar` subdirectory.
+4.  Enter the `open-bazaar` subdirectory.
 Build the OpenBazaar Docker images by running `./buildImage`.
 
 5. Enter the `server-deployment/sshd-container` directory and build that image with
