@@ -26,6 +26,9 @@ running a $5 server for two months.
 2. Install Docker Compose too, following Step 1 of [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04).
 Again, it focuses on a Ubuntu system.
 
+* It's also a good idea to have some swap memory. Particularly if the memory of the server you're using
+is 1GB or less. [Here is a great tutorial on installing swap memory in Ubuntu 16](https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-16-04).
+
 3. Clone this repository in your home directory with the following command:
 `git clone https://github.com/P2PVPS/server-deployment`
 

@@ -8,7 +8,7 @@
 
 
 #IMAGE BUILD COMMANDS
-FROM ubuntu:16.10
+FROM ubuntu:16.04
 MAINTAINER Chris Troutner <chris.troutner@gmail.com>
 
 #Update the OS and install any OS packages needed.
