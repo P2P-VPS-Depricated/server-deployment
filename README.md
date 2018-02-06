@@ -37,8 +37,16 @@ is 1GB or less. [Here is a great tutorial on installing swap memory in Ubuntu 16
 4.  Enter the `open-bazaar` subdirectory.
 Build the OpenBazaar Docker images by running `./buildImage`.
 
+* Initialize the OpenBazaar store by running the initialization script: `./initImage`
+
+* Configure your store to use Bitcoin Cash (BCH) by copying the `config` file:
+`cp config ~/.p2pvps/openbazaar/`
+
 5. Enter the `server-deployment/sshd-container` directory and build that image with
 `./buildImage`.
+
+* Enter the `server-deployment/listing-manager` directory and build that image with
+`./build-image`.
 
 6. Enter the `server-deployment` directory and build the ConnextCMS docker container.
 The `--no-cache` option should be used to prevent issues with symbolic links:
