@@ -180,6 +180,7 @@ async function updateMoneyPending(config) {
 
     // Add the amount of this this pending sale to the moneyPending field.
     const newMoneyPending = data.collection.moneyPending + PENDING_PRICE;
+    config.logr.debug(`newMoneyPending = ${newMoneyPending}`);
     data.collection.moneyPending = newMoneyPending;
 
     // Update the devicePrivateData model with the new moneyPending value.
