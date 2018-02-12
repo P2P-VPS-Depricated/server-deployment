@@ -125,7 +125,9 @@ async function updateExpiration(config, deviceId, timeSelector) {
 
     // Calculate a new expiration date.
     const now = new Date();
-    const expirationDate = new Date(now.getTime() + targetTime);
+    const oldExpiration = new Date(data.collection.expiration);
+    //const expirationDate = new Date(now.getTime() + targetTime);
+    const expirationDate = new Date(oldExpiration.getTime() + targetTime); // Add new expiration time to existing.
     data.collection.expiration = expirationDate.toISOString();
 
     // Update the devicePublicModel with a new expiration date.
@@ -142,6 +144,46 @@ async function updateExpiration(config, deviceId, timeSelector) {
     return false;
   } catch (err) {
     config.logr.error(`Error in util.js/updateExpiration(): ${err}`);
+    config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
+    throw err;
+  }
+}
+
+// This function updates the moneyPending field in the devicePrivateData model.
+async function updateMoneyPending(config) {
+  try {
+    // This constant will be replaced at some point with a function which retrieves
+    // the sale price from the obContract model.
+    const PENDING_PRICE = 0.3;
+
+    const deviceId = config.devicePrivateData._id;
+
+    // Get the devicePrivateData model.
+    let options = {
+      method: "GET",
+      uri: `${config.server}:${config.port}/api/devicePrivateData/${deviceId}`,
+      json: true,
+    };
+    const data = await rp(options);
+
+    // Add the amount of this this pending sale to the moneyPending field.
+    const newMoneyPending = data.collection.moneyPending + PENDING_PRICE;
+    data.collection.moneyPending = newMoneyPending;
+
+    // Update the devicePrivateData model with the new moneyPending value.
+    options = {
+      method: "POST",
+      uri: `${config.server}:${config.port}/api/devicePrivateData/${deviceId}/update`,
+      body: data.collection,
+      json: true,
+    };
+    const updatedData = await rp(options);
+
+    // Verify that the returned value contains the new date.
+    if (updatedData.collection.moneyPending === newMoneyPending) return true;
+    return false;
+  } catch (err) {
+    config.logr.error(`Error in util.js/updateMoneyPending(): ${err}`);
     config.logr.error(`Error stringified: ${JSON.stringify(err, null, 2)}`);
     throw err;
   }
@@ -392,4 +434,5 @@ module.exports = {
   removeOBListing,
   getObContractModel,
   validateGuid,
+  updateMoneyPending,
 };

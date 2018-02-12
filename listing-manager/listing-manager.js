@@ -38,6 +38,11 @@ const CHECK_OB_NOTIFICATIONS_INTERVAL = 2 * 60000; // 2 minutes
 const CHECK_RENTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
 const CHECK_LISTED_DEVICES_INTERVAL = 5 * 60000; // 5 minutes
 
+// Renewal duration:
+//const RENEWAL_DURATION = 10; // 8 minutes
+//const RENEWAL_DURATION = 20; // 1 hour
+const RENEWAL_DURATION = 30; // 1 day
+
 // Amount of time (mS) a device can go without checking in.
 const MAX_DELAY = 60000 * 10; // 10 minutes.
 
@@ -135,9 +140,10 @@ async function fulfillNewOrders() {
     await util.markNotificationAsRead(config);
 
     // Update the expiration date.
-    await util.updateExpiration(config, devicePublicModel._id, 20);
+    await util.updateExpiration(config, devicePublicModel._id, RENEWAL_DURATION);
 
     // Add the sale amount to the moneyPending field of the devicePrivateModel.
+    await util.updateMoneyPending(config);
 
     // Add the device to the Rented Devices list.
     await util.addRentedDevice(config, devicePublicModel._id);
