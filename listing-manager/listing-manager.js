@@ -11,7 +11,7 @@
   Reboot them if they lose connection with the server, by manipulating the
   expiration date.
 
-  ---WIP---
+  ---Work in Progress (WIP)---
   * Poll the OB store for purchases of renewal listings and increment the
   expiration date of the Client.
 
@@ -128,11 +128,16 @@ async function fulfillNewOrders() {
 
     config.obNotice = thisNotice;
 
+    // Testing
+    console.log(`config object: ${JSON.stringify(config, null, 2)}`);
+
     // Mark notification as read.
     await util.markNotificationAsRead(config);
 
     // Update the expiration date.
     await util.updateExpiration(config, devicePublicModel._id, 20);
+
+    // Add the sale amount to the moneyPending field of the devicePrivateModel.
 
     // Add the device to the Rented Devices list.
     await util.addRentedDevice(config, devicePublicModel._id);
