@@ -197,7 +197,7 @@ async function updateMoneyPending(config) {
 
     // Verify that the returned value contains the new date.
     if (updatedData.collection.moneyPending === newMoneyPending) {
-      config.logr.debug(`moneyPending field updated for device.`);
+      //config.logr.debug(`moneyPending field updated for device.`);
       return true;
     }
     config.logr.error(`moneyPending field not updated!`);
