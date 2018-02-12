@@ -192,7 +192,11 @@ async function updateMoneyPending(config) {
     const updatedData = await rp(options);
 
     // Verify that the returned value contains the new date.
-    if (updatedData.collection.moneyPending === newMoneyPending) return true;
+    if (updatedData.collection.moneyPending === newMoneyPending) {
+      config.logr.debug(`moneyPending field updated for device.`);
+      return true;
+    }
+    config.logr.error(`moneyPending field not updated!`);
     return false;
   } catch (err) {
     config.logr.error(`Error in util.js/updateMoneyPending(): ${err}`);
