@@ -102,6 +102,7 @@ async function fulfillNewOrders() {
 
     // Get device ID from the listing
     const tmp = thisNotice.notification.slug.split("-");
+    console.log(`tmp[0]: ${tmp[0]}`); // Testing
     const deviceId = tmp[tmp.length - 1];
 
     // Exit if no device ID was returned.
