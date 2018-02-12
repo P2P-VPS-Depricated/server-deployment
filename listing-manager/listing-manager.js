@@ -105,7 +105,7 @@ async function fulfillNewOrders() {
     const deviceId = tmp[tmp.length - 1];
 
     // Determine if this is a renewal listing or not.
-    if (tmp[0] === renewal) config.renewal = true;
+    if (tmp[0] === "renewal") config.renewal = true;
     else config.renewal = false;
 
     // Exit if no device ID was returned.
