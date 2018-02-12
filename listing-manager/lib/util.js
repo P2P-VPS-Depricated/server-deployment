@@ -126,8 +126,15 @@ async function updateExpiration(config, deviceId, timeSelector) {
     // Calculate a new expiration date.
     const now = new Date();
     const oldExpiration = new Date(data.collection.expiration);
-    //const expirationDate = new Date(now.getTime() + targetTime);
-    const expirationDate = new Date(oldExpiration.getTime() + targetTime); // Add new expiration time to existing.
+    let expirationDate;
+    if (config.renewal) {
+      // Add new expiration time to existing, for renewals.
+      expirationDate = new Date(oldExpiration.getTime() + targetTime);
+    } else {
+      // Set expiration references to now, for new listing purchases.
+      expirationDate = new Date(now.getTime() + targetTime);
+    }
+
     data.collection.expiration = expirationDate.toISOString();
 
     // Update the devicePublicModel with a new expiration date.
@@ -140,7 +147,12 @@ async function updateExpiration(config, deviceId, timeSelector) {
     const updatedData = await rp(options);
 
     // Verify that the returned value contains the new date.
-    if (updatedData.collection.expiration) return true;
+    if (updatedData.collection.expiration === expirationDate.toISOString()) return true;
+    config.logr.error(
+      `expiration date ${
+        updatedData.collection.expiration
+      } does not match: ${expirationDate.toISOString()}`
+    );
     return false;
   } catch (err) {
     config.logr.error(`Error in util.js/updateExpiration(): ${err}`);

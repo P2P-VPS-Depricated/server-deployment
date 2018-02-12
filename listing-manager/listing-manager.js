@@ -102,8 +102,11 @@ async function fulfillNewOrders() {
 
     // Get device ID from the listing
     const tmp = thisNotice.notification.slug.split("-");
-    console.log(`tmp[0]: ${tmp[0]}`); // Testing
     const deviceId = tmp[tmp.length - 1];
+
+    // Determine if this is a renewal listing or not.
+    if (tmp[0] === renewal) config.renewal = true;
+    else config.renewal = false;
 
     // Exit if no device ID was returned.
     //if (deviceId == null) return null;
