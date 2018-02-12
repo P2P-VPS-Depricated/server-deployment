@@ -179,7 +179,10 @@ async function updateMoneyPending(config) {
     const data = await rp(options);
 
     // Add the amount of this this pending sale to the moneyPending field.
-    const newMoneyPending = data.collection.moneyPending + PENDING_PRICE;
+    let newMoneyPending;
+    if (data.collection.moneyPending)
+      newMoneyPending = data.collection.moneyPending + PENDING_PRICE;
+    else newMoneyPending = PENDING_PRICE;
     config.logr.debug(`newMoneyPending = ${newMoneyPending}`);
     data.collection.moneyPending = newMoneyPending;
 
