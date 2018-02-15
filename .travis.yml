@@ -16,7 +16,7 @@ before_install:
   - ./init
   - docker build -t ob-server ./open-bazaar/
   - ./open-bazaar/initImage
-  #- docker build -t listing-manager ./listing-manager/
-  #- docker build -t sshd-container ./sshd-container/
-  #- docker-compose build
-  #- docker-compose up -d
+  - docker build -t listing-manager ./listing-manager/
+  - docker build -t sshd-container ./sshd-container/
+  - docker-compose build
+  - docker-compose up
