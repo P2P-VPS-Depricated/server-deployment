@@ -14,5 +14,7 @@ services:
 
 before_install:
   - docker build -t listing-manager ./listing-manager/
-  #- docker-compose build
-  #- docker-compose up
+  - docker build -t ob-server ./open-bazaar/
+  - docker build -t sshd-container ./sshd-container/
+  - docker-compose build
+  - docker-compose up
