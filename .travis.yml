@@ -13,8 +13,10 @@ services:
   - docker
 
 before_install:
-  - docker build -t listing-manager ./listing-manager/
+  - ./init
   - docker build -t ob-server ./open-bazaar/
-  - docker build -t sshd-container ./sshd-container/
-  - docker-compose build
-  - docker-compose up
+  - ./open-bazaar/initImage
+  #- docker build -t listing-manager ./listing-manager/
+  #- docker build -t sshd-container ./sshd-container/
+  #- docker-compose build
+  #- docker-compose up -d
